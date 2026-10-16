@@ -1,0 +1,935 @@
+
+"use client";
+
+import { useState } from "react";
+
+type Scene = "Home" | "Away" | "Night";
+
+export default function InteractiveSmartVilla() {
+  const [lightsOn, setLightsOn] = useState(true);
+  const [brightness, setBrightness] = useState(78);
+  const [curtainsOpen, setCurtainsOpen] = useState(true);
+  const [temperature, setTemperature] = useState(23);
+  const [securityArmed, setSecurityArmed] = useState(false);
+  const [scene, setScene] = useState<Scene>("Home");
+  
+
+  const applyScene = (nextScene: Scene) => {
+    setScene(nextScene);
+
+    if (nextScene === "Home") {
+      setLightsOn(true);
+      setBrightness(78);
+      setCurtainsOpen(true);
+      setTemperature(23);
+      setSecurityArmed(false);
+    }
+
+    if (nextScene === "Away") {
+      setLightsOn(false);
+      setBrightness(0);
+      setCurtainsOpen(false);
+      setTemperature(26);
+      setSecurityArmed(true);
+    }
+
+    if (nextScene === "Night") {
+      setLightsOn(true);
+      setBrightness(24);
+      setCurtainsOpen(false);
+      setTemperature(22);
+      setSecurityArmed(true);
+    }
+  };
+
+  const activeLights = lightsOn && brightness > 0;
+
+  return (
+    <section className="sn-villa" id="smart-villa">
+      <style jsx>{`
+        .sn-villa {
+          --sn-green: #1687ff;
+          --sn-blue: #4800ff;
+          --sn-bg: #090b0e;
+          --sn-panel: #11151a;
+          --sn-border: rgba(255, 255, 255, 0.1);
+          color: #f4f7f7;
+          background:
+            radial-gradient(
+              ellipse at 12% 0%,
+              rgba(22, 135, 255, 0.09),
+              transparent 36%
+            ),
+            radial-gradient(
+              ellipse at 100% 75%,
+              rgba(72, 0, 255, 0.11),
+              transparent 34%
+            ),
+            var(--sn-bg);
+          padding: clamp(56px, 8vw, 100px) clamp(18px, 5vw, 72px);
+          overflow: hidden;
+        }
+
+        .sn-shell {
+          width: 100%;
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+
+        .sn-heading {
+          max-width: 760px;
+          margin: 0 auto 38px;
+          text-align: center;
+        }
+
+        .sn-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          margin-bottom: 17px;
+          color: var(--sn-green);
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.19em;
+          text-transform: uppercase;
+        }
+
+        .sn-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: var(--sn-green);
+          box-shadow: 0 0 15px var(--sn-green);
+        }
+
+        .sn-heading h2 {
+          margin: 0;
+          font-size: clamp(32px, 5vw, 58px);
+          line-height: 1.08;
+          letter-spacing: -0.055em;
+          font-weight: 750;
+        }
+
+        .sn-heading h2 span {
+          color: var(--sn-green);
+        }
+
+        .sn-heading p {
+          max-width: 600px;
+          margin: 18px auto 0;
+          color: #9ca7ac;
+          font-size: 14px;
+          line-height: 1.9;
+        }
+
+        .sn-dashboard {
+          display: grid;
+          grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+          border: 1px solid var(--sn-border);
+          border-radius: 24px;
+          background: rgba(17, 21, 26, 0.84);
+          overflow: hidden;
+          box-shadow: 0 30px 100px rgba(0, 0, 0, 0.28);
+        }
+
+        .sn-visual {
+          min-width: 0;
+          padding: clamp(18px, 3vw, 32px);
+          border-right: 1px solid var(--sn-border);
+        }
+
+        .sn-visual-top,
+        .sn-panel-top,
+        .sn-card-head,
+        .sn-status-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .sn-kicker {
+          color: #89949a;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+        }
+
+        .sn-live {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 8px 10px;
+          border: 1px solid rgba(22, 135, 255, 0.2);
+          border-radius: 100px;
+          background: rgba(22, 135, 255, 0.06);
+          color: var(--sn-green);
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        .sn-live i {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: currentColor;
+        }
+
+        .sn-house {
+          position: relative;
+          margin-top: 18px;
+          min-height: 300px;
+          aspect-ratio: 1.24 / 1;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          background:
+            linear-gradient(
+              180deg,
+              rgba(7, 14, 24, 0.08),
+              rgba(7, 12, 18, 0.2)
+            ),
+            url("https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=85")
+              center 54% / cover;
+          isolation: isolate;
+        }
+
+        .sn-house::before {
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          content: "";
+          background: linear-gradient(
+            180deg,
+            rgba(4, 9, 15, 0.12),
+            rgba(4, 9, 15, 0.66)
+          );
+        }
+
+        .sn-house-glow {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: rgba(255, 198, 106, 0.03);
+          transition: background 350ms ease;
+        }
+
+        .sn-house-glow.is-lit {
+          background: rgba(255, 198, 106, 0.16);
+        }
+
+        .sn-window {
+          position: absolute;
+          top: 30%;
+          left: 16%;
+          width: 31%;
+          height: 30%;
+          overflow: hidden;
+          border: 3px solid rgba(230, 238, 238, 0.76);
+          border-radius: 3px;
+          background: rgba(12, 26, 38, 0.72);
+          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+        }
+
+        .sn-window-right {
+          left: auto;
+          right: 16%;
+          width: 26%;
+          height: 35%;
+          top: 25%;
+        }
+
+        .sn-window-glass {
+          position: absolute;
+          inset: 0;
+          background: rgba(11, 26, 39, 0.85);
+          transition: background 300ms ease;
+        }
+
+        .sn-window-glass.is-lit {
+          background: rgba(255, 199, 106, 0.88);
+          box-shadow: inset 0 0 25px rgba(255, 218, 153, 0.55);
+        }
+
+        .sn-window-glass::after {
+          position: absolute;
+          content: "";
+          left: 50%;
+          top: 0;
+          bottom: 0;
+          width: 2px;
+          background: rgba(240, 245, 245, 0.72);
+        }
+
+        .sn-window-glass::before {
+          position: absolute;
+          content: "";
+          left: 0;
+          right: 0;
+          top: 50%;
+          height: 2px;
+          background: rgba(240, 245, 245, 0.72);
+        }
+
+        .sn-curtain {
+          position: absolute;
+          z-index: 2;
+          top: 0;
+          bottom: 0;
+          width: 50%;
+          background: linear-gradient(90deg, #c6bba6, #eee5d3 60%, #b8aa92);
+          transition: transform 450ms cubic-bezier(0.2, 0.75, 0.2, 1);
+          box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .sn-curtain.left {
+          left: 0;
+          transform: translateX(0);
+        }
+
+        .sn-curtain.right {
+          right: 0;
+          transform: translateX(0);
+        }
+
+        .sn-curtain.left.open {
+          transform: translateX(-88%);
+        }
+
+        .sn-curtain.right.open {
+          transform: translateX(88%);
+        }
+
+        .sn-window-right .sn-curtain {
+          background: linear-gradient(90deg, #9c8c75, #d9cbb5 60%, #a99a84);
+        }
+
+        .sn-house-label {
+          position: absolute;
+          right: 14px;
+          bottom: 14px;
+          left: 14px;
+          display: flex;
+          justify-content: space-between;
+          align-items: end;
+          gap: 10px;
+        }
+
+        .sn-house-label strong {
+          display: block;
+          font-size: 14px;
+          letter-spacing: -0.02em;
+        }
+
+        .sn-house-label span {
+          display: block;
+          margin-top: 5px;
+          color: #d0d6d8;
+          font-size: 10px;
+        }
+
+        .sn-house-chip {
+          flex-shrink: 0;
+          padding: 8px 10px;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-radius: 8px;
+          background: rgba(8, 12, 17, 0.7);
+          backdrop-filter: blur(12px);
+          font-size: 10px;
+        }
+
+        .sn-scene-label {
+          margin: 24px 0 12px;
+          color: #8e999e;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+
+        .sn-scenes {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 9px;
+        }
+
+        .sn-scene {
+          min-height: 48px;
+          padding: 10px;
+          border: 1px solid var(--sn-border);
+          border-radius: 10px;
+          background: #0b0e12;
+          color: #bdc5c8;
+          font: inherit;
+          font-size: 12px;
+          cursor: pointer;
+          transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            color 180ms ease;
+        }
+
+        .sn-scene:hover,
+        .sn-scene.active {
+          border-color: rgba(22, 135, 255, 0.5);
+          background: rgba(22, 135, 255, 0.08);
+          color: var(--sn-green);
+        }
+
+        .sn-panel {
+          min-width: 0;
+          padding: clamp(18px, 2.7vw, 30px);
+        }
+
+        .sn-panel-top {
+          margin-bottom: 22px;
+        }
+
+        .sn-panel-top h3 {
+          margin: 0;
+          font-size: 17px;
+          letter-spacing: -0.03em;
+        }
+
+        .sn-panel-top p {
+          margin: 6px 0 0;
+          color: #8d989e;
+          font-size: 11px;
+        }
+
+        .sn-control {
+          padding: 17px 0;
+          border-top: 1px solid var(--sn-border);
+        }
+
+        .sn-card-head {
+          justify-content: flex-start;
+        }
+
+        .sn-icon {
+          display: grid;
+          width: 40px;
+          height: 40px;
+          flex-shrink: 0;
+          place-items: center;
+          border: 1px solid var(--sn-border);
+          border-radius: 12px;
+          background: #0b0e12;
+          font-size: 19px;
+        }
+
+        .sn-icon.active {
+          border-color: rgba(22, 135, 255, 0.23);
+          background: rgba(22, 135, 255, 0.09);
+        }
+
+        .sn-control-copy {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .sn-control-copy strong {
+          display: block;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .sn-control-copy span {
+          display: block;
+          margin-top: 5px;
+          color: #8e999e;
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .sn-value {
+          flex-shrink: 0;
+          color: var(--sn-green);
+          font-size: 12px;
+          font-weight: 750;
+        }
+
+        .sn-toggle {
+          position: relative;
+          width: 42px;
+          height: 24px;
+          flex-shrink: 0;
+          border: 0;
+          border-radius: 30px;
+          background: #353c42;
+          cursor: pointer;
+          transition: background 200ms ease;
+        }
+
+        .sn-toggle.on {
+          background: var(--sn-green);
+        }
+
+        .sn-toggle span {
+          position: absolute;
+          top: 3px;
+          left: 3px;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: white;
+          transition: transform 200ms ease;
+        }
+
+        .sn-toggle.on span {
+          transform: translateX(18px);
+          background: #07100e;
+        }
+
+        .sn-range-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          margin: 16px 0 9px;
+          color: #879299;
+          font-size: 10px;
+        }
+
+        .sn-range {
+          display: block;
+          width: 100%;
+          height: 4px;
+          margin: 0;
+          border-radius: 20px;
+          accent-color: var(--sn-green);
+          cursor: pointer;
+        }
+
+        .sn-temp-control {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: 14px;
+        }
+
+        .sn-temp-button {
+          display: grid;
+          width: 34px;
+          height: 34px;
+          flex-shrink: 0;
+          place-items: center;
+          border: 1px solid var(--sn-border);
+          border-radius: 10px;
+          background: #0b0e12;
+          color: #f4f7f7;
+          font-size: 20px;
+          cursor: pointer;
+        }
+
+        .sn-temp-button:hover {
+          border-color: var(--sn-green);
+          color: var(--sn-green);
+        }
+
+        .sn-temp-value {
+          flex: 1;
+          text-align: center;
+          font-size: 27px;
+          font-weight: 750;
+          letter-spacing: -0.05em;
+        }
+
+        .sn-temp-value small {
+          color: #8d989e;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .sn-security {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-top: 5px;
+          padding: 14px;
+          border: 1px solid var(--sn-border);
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.018);
+        }
+
+        .sn-security-copy {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          min-width: 0;
+        }
+
+        .sn-security-copy strong {
+          display: block;
+          font-size: 12px;
+        }
+
+        .sn-security-copy span {
+          display: block;
+          margin-top: 5px;
+          color: #8d989e;
+          font-size: 10px;
+        }
+
+        .sn-footer {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          margin-top: 16px;
+          color: #7f8b91;
+          font-size: 10px;
+          line-height: 1.7;
+        }
+
+        .sn-footer strong {
+          color: var(--sn-green);
+          font-weight: 650;
+        }
+
+        .sn-reset {
+          align-self: flex-start;
+          padding: 0;
+          border: 0;
+          background: none;
+          color: #b6c0c4;
+          font: inherit;
+          font-size: 10px;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          cursor: pointer;
+        }
+
+        .sn-reset:hover {
+          color: var(--sn-green);
+        }
+
+        @media (max-width: 850px) {
+          .sn-dashboard {
+            grid-template-columns: minmax(0, 1fr);
+          }
+
+          .sn-visual {
+            border-right: 0;
+            border-bottom: 1px solid var(--sn-border);
+          }
+
+          .sn-house {
+            min-height: 260px;
+          }
+
+          .sn-panel {
+            padding-top: 24px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .sn-villa {
+            padding-right: 14px;
+            padding-left: 14px;
+          }
+
+          .sn-house {
+            min-height: 230px;
+            aspect-ratio: 1 / 1;
+          }
+
+          .sn-scenes {
+            gap: 6px;
+          }
+
+          .sn-scene {
+            padding: 8px 5px;
+            font-size: 11px;
+          }
+
+          .sn-visual {
+            padding: 16px;
+          }
+
+          .sn-panel {
+            padding: 18px 16px;
+          }
+
+          .sn-house-label strong {
+            font-size: 12px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .sn-villa *,
+          .sn-villa *::before,
+          .sn-villa *::after {
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
+
+      <div className="sn-shell">
+        <header className="sn-heading">
+          <div className="sn-eyebrow">
+            <span className="sn-dot" />
+            EXPERIENCE SMART LIVING
+          </div>
+
+          <h2>
+            Your villa.
+            <br />
+            <span>Your control.</span>
+          </h2>
+
+          <p>
+            Explore how intelligent lighting, automated curtains, climate
+            comfort and security can work together in one beautifully
+            connected home.
+          </p>
+        </header>
+
+        <div className="sn-dashboard">
+          <div className="sn-visual">
+            <div className="sn-visual-top">
+              <span className="sn-kicker">SMARTNEST / LIVE DEMO</span>
+              <span className="sn-live">
+                <i />
+                INTERACTIVE PREVIEW
+              </span>
+            </div>
+
+            <div
+              className="sn-house"
+              role="img"
+              aria-label="Smart villa interior preview with interactive lighting and curtains"
+            >
+              <div
+                className={`sn-house-glow ${activeLights ? "is-lit" : ""}`}
+                style={{
+                  opacity: activeLights ? Math.max(0.15, brightness / 100) : 0,
+                }}
+              />
+
+              <div className="sn-window">
+                <div
+                  className={`sn-window-glass ${activeLights ? "is-lit" : ""}`}
+                  style={{
+                    opacity: activeLights ? Math.max(0.25, brightness / 100) : 1,
+                  }}
+                />
+                <div className={`sn-curtain left ${curtainsOpen ? "open" : ""}`} />
+                <div className={`sn-curtain right ${curtainsOpen ? "open" : ""}`} />
+              </div>
+
+              <div className="sn-window sn-window-right">
+                <div
+                  className={`sn-window-glass ${activeLights ? "is-lit" : ""}`}
+                  style={{
+                    opacity: activeLights ? Math.max(0.25, brightness / 100) : 1,
+                  }}
+                />
+                <div className={`sn-curtain left ${curtainsOpen ? "open" : ""}`} />
+                <div className={`sn-curtain right ${curtainsOpen ? "open" : ""}`} />
+              </div>
+
+              <div className="sn-house-label">
+                <div>
+                  <strong>Residence 01</strong>
+                  <span>Intelligent living, thoughtfully designed.</span>
+                </div>
+                <div className="sn-house-chip">
+                  {securityArmed ? "● System armed" : "○ System at home"}
+                </div>
+              </div>
+            </div>
+
+            <div className="sn-scene-label">One touch. Your whole home.</div>
+
+            <div className="sn-scenes" aria-label="Smart home scenes">
+              {(["Home", "Away", "Night"] as Scene[]).map((item) => (
+                <button
+                  className={`sn-scene ${scene === item ? "active" : ""}`}
+                  key={item}
+                  type="button"
+                  aria-pressed={scene === item}
+                  onClick={() => applyScene(item)}
+                >
+                  {item === "Home" && "⌂ "}
+                  {item === "Away" && "↗ "}
+                  {item === "Night" && "☾ "}
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="sn-panel">
+            <div className="sn-panel-top">
+              <div>
+                <h3>Home controls</h3>
+                <p>Make yourself at home.</p>
+              </div>
+              <span className="sn-kicker">4 SYSTEMS</span>
+            </div>
+
+            <div className="sn-control">
+              <div className="sn-card-head">
+                <div className={`sn-icon ${activeLights ? "active" : ""}`}>
+                  ☼
+                </div>
+                <div className="sn-control-copy">
+                  <strong>Smart lighting</strong>
+                  <span>{activeLights ? "Ambient lighting enabled" : "All lights switched off"}</span>
+                </div>
+                <button
+                  type="button"
+                  className={`sn-toggle ${lightsOn ? "on" : ""}`}
+                  role="switch"
+                  aria-checked={lightsOn}
+                  aria-label="Toggle smart lighting"
+                  onClick={() => {
+                    setLightsOn(!lightsOn);
+                    setScene("Home");
+                  }}
+                >
+                  <span />
+                </button>
+              </div>
+
+              <div className="sn-range-row">
+                <span>Brightness</span>
+                <span className="sn-value">
+                  {lightsOn ? brightness : 0}%
+                </span>
+              </div>
+              <input
+                className="sn-range"
+                type="range"
+                min="0"
+                max="100"
+                value={brightness}
+                aria-label="Lighting brightness"
+                onChange={(event) => {
+                  const next = Number(event.target.value);
+                  setBrightness(next);
+                  setLightsOn(next > 0);
+                  setScene("Home");
+                }}
+              />
+            </div>
+
+            <div className="sn-control">
+              <div className="sn-card-head">
+                <div className={`sn-icon ${curtainsOpen ? "active" : ""}`}>
+                  ▥
+                </div>
+                <div className="sn-control-copy">
+                  <strong>Motorised curtains</strong>
+                  <span>{curtainsOpen ? "Curtains open" : "Curtains closed"}</span>
+                </div>
+                <button
+                  type="button"
+                  className={`sn-toggle ${curtainsOpen ? "on" : ""}`}
+                  role="switch"
+                  aria-checked={curtainsOpen}
+                  aria-label="Toggle curtains"
+                  onClick={() => {
+                    setCurtainsOpen(!curtainsOpen);
+                    setScene("Home");
+                  }}
+                >
+                  <span />
+                </button>
+              </div>
+            </div>
+
+            <div className="sn-control">
+              <div className="sn-card-head">
+                <div className="sn-icon active">♨</div>
+                <div className="sn-control-copy">
+                  <strong>Climate comfort</strong>
+                  <span>Set your preferred temperature</span>
+                </div>
+                <span className="sn-value">AUTO</span>
+              </div>
+
+              <div className="sn-temp-control">
+                <button
+                  type="button"
+                  className="sn-temp-button"
+                  aria-label="Decrease temperature"
+                  onClick={() => {
+                    setTemperature(Math.max(16, temperature - 1));
+                    setScene("Home");
+                  }}
+                >
+                  −
+                </button>
+
+                <div className="sn-temp-value" aria-live="polite">
+                  {temperature}°<small>C</small>
+                </div>
+
+                <button
+                  type="button"
+                  className="sn-temp-button"
+                  aria-label="Increase temperature"
+                  onClick={() => {
+                    setTemperature(Math.min(30, temperature + 1));
+                    setScene("Home");
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="sn-control">
+              <div className="sn-security">
+                <div className="sn-security-copy">
+                  <div className={`sn-icon ${securityArmed ? "active" : ""}`}>
+                    {securityArmed ? "◈" : "◇"}
+                  </div>
+                  <div>
+                    <strong>Smart security</strong>
+                    <span>
+                      {securityArmed ? "Demo system armed" : "Home mode active"}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={`sn-toggle ${securityArmed ? "on" : ""}`}
+                  role="switch"
+                  aria-checked={securityArmed}
+                  aria-label="Toggle demo security"
+                  onClick={() => {
+                    setSecurityArmed(!securityArmed);
+                    setScene("Home");
+                  }}
+                >
+                  <span />
+                </button>
+              </div>
+            </div>
+
+            <div className="sn-footer">
+              <span>
+                <strong>SMARTNEST</strong>
+                <br />
+                A smarter way to live.
+              </span>
+              <button
+                type="button"
+                className="sn-reset"
+                onClick={() => applyScene("Home")}
+              >
+                Reset demo ↺
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

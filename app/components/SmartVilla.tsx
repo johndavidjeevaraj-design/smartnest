@@ -1,0 +1,145 @@
+
+"use client";
+
+import { Canvas } from "@react-three/fiber";
+import { Environment, OrbitControls } from "@react-three/drei";
+import { useMemo } from "react";
+import * as THREE from "three";
+
+type SmartVillaProps = {
+  lightsOn: boolean;
+  brightness: number;
+  scene: string;
+};
+
+function VillaModel({
+  lightsOn,
+  brightness,
+  scene,
+}: SmartVillaProps) {
+  const windowMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: lightsOn ? "#FFD69A" : "#17202E",
+        emissive: lightsOn ? "#FF9D42" : "#000000",
+        emissiveIntensity: lightsOn ? brightness / 100 : 0,
+        roughness: 0.25,
+        metalness: 0.05,
+      }),
+    [lightsOn, brightness]
+  );
+
+  const accentColor =
+    scene === "Movie Night"
+      ? "#008CFF"
+      : scene === "Relax"
+        ? "#8B5CF6"
+        : "#1687ff";
+
+  return (
+    <group position={[0, -0.6, 0]}>
+      {/* Ground platform */}
+      <mesh position={[0, -0.25, 0]} receiveShadow>
+        <boxGeometry args={[5.8, 0.25, 3.8]} />
+        <meshStandardMaterial color="#101722" roughness={0.85} />
+      </mesh>
+
+      {/* Main building */}
+      <mesh position={[0, 0.65, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3.7, 1.8, 2.5]} />
+        <meshStandardMaterial color="#D7DCE5" roughness={0.65} />
+      </mesh>
+
+      {/* Flat roof */}
+      <mesh position={[0, 1.65, 0]} castShadow>
+        <boxGeometry args={[4, 0.18, 2.8]} />
+        <meshStandardMaterial color="#252D3A" roughness={0.5} />
+      </mesh>
+
+      {/* Front windows */}
+      {[-1.1, 0, 1.1].map((x, i) => (
+        <mesh key={i} position={[x, 0.8, 1.261]}>
+          <boxGeometry args={[0.72, 0.75, 0.035]} />
+          <primitive object={windowMaterial} attach="material" />
+        </mesh>
+      ))}
+
+      {/* Upper accent band */}
+      <mesh position={[0, 1.28, 1.275]}>
+        <boxGeometry args={[3.5, 0.055, 0.05]} />
+        <meshStandardMaterial
+          color={accentColor}
+          emissive={accentColor}
+          emissiveIntensity={0.8}
+        />
+      </mesh>
+
+      {/* Entrance */}
+      <mesh position={[0, 0.22, 1.275]}>
+        <boxGeometry args={[0.62, 0.9, 0.06]} />
+        <meshStandardMaterial color="#202A39" roughness={0.5} />
+      </mesh>
+
+      {/* Side wing */}
+      <mesh position={[1.65, 0.3, -0.15]} castShadow>
+        <boxGeometry args={[1.15, 1.1, 2.3]} />
+        <meshStandardMaterial color="#AAB6C7" roughness={0.7} />
+      </mesh>
+
+      {/* Side wing window */}
+      <mesh position={[2.24, 0.38, 0.45]}>
+        <boxGeometry args={[0.035, 0.55, 0.75]} />
+        <primitive object={windowMaterial} attach="material" />
+      </mesh>
+
+      {/* Landscape lights */}
+      {[-2.1, 2.1].map((x) => (
+        <group key={x} position={[x, -0.03, 1.15]}>
+          <pointLight
+            color={accentColor}
+            intensity={lightsOn ? brightness / 35 : 0.05}
+            distance={2.2}
+          />
+          <mesh>
+            <sphereGeometry args={[0.055, 16, 16]} />
+            <meshStandardMaterial
+              color={accentColor}
+              emissive={accentColor}
+              emissiveIntensity={1.5}
+            />
+          </mesh>
+        </group>
+      ))}
+
+      <ambientLight intensity={0.8} />
+      <directionalLight
+        position={[4, 7, 5]}
+        intensity={2}
+        castShadow
+      />
+      <Environment preset="city" />
+    </group>
+  );
+}
+
+export default function SmartVilla(props: SmartVillaProps) {
+  return (
+    <div className="h-[360px] w-full overflow-hidden rounded-3xl sm:h-[440px] lg:h-[520px]">
+      <Canvas
+        camera={{ position: [6, 4, 7], fov: 35 }}
+        shadows
+        dpr={[1, 1.5]}
+      >
+        <color attach="background" args={["#070A11"]} />
+        <VillaModel {...props} />
+        <OrbitControls
+          enablePan={false}
+          minDistance={6}
+          maxDistance={12}
+          minPolarAngle={Math.PI / 4}
+          maxPolarAngle={Math.PI / 2.05}
+        />
+      </Canvas>
+    </div>
+  );
+}

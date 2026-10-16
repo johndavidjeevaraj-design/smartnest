@@ -1,0 +1,37 @@
+"use client";
+
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState, type CSSProperties } from "react";
+
+type Props = {
+  prefix?: string;
+  texts?: string[];
+  font?: CSSProperties;
+  color?: string;
+  prefixColor?: string;
+  badgeBackground?: string;
+  badgePaddingX?: number;
+  badgePaddingY?: number;
+  badgeRadius?: number;
+  gap?: number;
+  auto?: boolean;
+  intervalMs?: number;
+};
+export default function RotatingText({ prefix = "", texts = ["components", "interfaces", "experiences"], font = { fontFamily: "Inter, system-ui, sans-serif", fontSize: "2rem", fontWeight: 600, lineHeight: 1.1 }, color = "#29F0C4", prefixColor = "#E8E8E8", badgeBackground = "transparent", badgePaddingX = 0, badgePaddingY = 0, badgeRadius = 0, gap = 8, auto = true, intervalMs = 2600 }: Props) {
+  const safeTexts = texts.length ? texts : ["intelligent living"];
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (!auto || safeTexts.length < 2) return;
+    const id = window.setInterval(() => setIndex((current) => (current + 1) % safeTexts.length), intervalMs);
+    return () => window.clearInterval(id);
+  }, [auto, intervalMs, safeTexts.length]);
+  return <span style={{ ...font, display: "flex", width: "100%", alignItems: "center", justifyContent: "flex-start", flexWrap: "wrap", gap, textAlign: font.textAlign ?? "left", minWidth: 0 }}>
+    {prefix ? <span style={{ color: prefixColor, whiteSpace: "pre" }}>{prefix}</span> : null}
+    <span style={{ display: "inline-flex", alignItems: "center", overflow: "hidden", verticalAlign: "bottom", backgroundColor: badgeBackground, color, borderRadius: badgeRadius, padding: `${badgePaddingY}px ${badgePaddingX}px`, boxSizing: "border-box", minWidth: 0 }}>
+      <span className="sr-only">{prefix ? `${prefix} ` : ""}{safeTexts[index]}</span>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span key={safeTexts[index]} aria-hidden="true" initial={{ y: "110%", opacity: 0, filter: "blur(5px)" }} animate={{ y: 0, opacity: 1, filter: "blur(0px)" }} exit={{ y: "-110%", opacity: 0, filter: "blur(5px)" }} transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }} style={{ display: "inline-block", whiteSpace: "normal" }}>{safeTexts[index]}</motion.span>
+      </AnimatePresence>
+    </span>
+  </span>;
+}

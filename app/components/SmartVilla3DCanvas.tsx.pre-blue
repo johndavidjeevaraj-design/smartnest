@@ -1,0 +1,412 @@
+
+"use client";
+
+import { useMemo } from "react";
+import { Canvas } from "@react-three/fiber";
+import { ContactShadows, OrbitControls } from "@react-three/drei";
+
+
+export type VillaSceneMode = "HOME" | "AWAY" | "NIGHT" | "CUSTOM";
+
+interface VillaProps {
+  lightsOn: boolean;
+  curtainsOpen: boolean;
+  temperature: number;
+  securityArmed: boolean;
+  sceneMode: VillaSceneMode;
+}
+
+function Block({
+  position,
+  size,
+  color,
+  emissive = "#000000",
+  emissiveIntensity = 0,
+  metalness = 0,
+  roughness = 0.72,
+}: {
+  position: [number, number, number];
+  size: [number, number, number];
+  color: string;
+  emissive?: string;
+  emissiveIntensity?: number;
+  metalness?: number;
+  roughness?: number;
+}) {
+  return (
+    <mesh position={position} castShadow receiveShadow>
+      <boxGeometry args={size} />
+      <meshStandardMaterial
+        color={color}
+        emissive={emissive}
+        emissiveIntensity={emissiveIntensity}
+        metalness={metalness}
+        roughness={roughness}
+      />
+    </mesh>
+  );
+}
+
+function Lamp({
+  position,
+  active,
+  color = "#b8ffe8",
+}: {
+  position: [number, number, number];
+  active: boolean;
+  color?: string;
+}) {
+  return (
+    <group position={position}>
+      <mesh>
+        <cylinderGeometry args={[0.12, 0.15, 0.055, 20]} />
+        <meshStandardMaterial
+          color={active ? color : "#53615f"}
+          emissive={active ? color : "#000000"}
+          emissiveIntensity={active ? 3 : 0}
+        />
+      </mesh>
+      <pointLight
+        color={color}
+        position={[0, -0.12, 0]}
+        intensity={active ? 1.4 : 0.04}
+        distance={3.1}
+        decay={2}
+      />
+    </group>
+  );
+}
+
+function Curtains({
+  centerX,
+  open,
+}: {
+  centerX: number;
+  open: boolean;
+}) {
+  const panelWidth = open ? 0.27 : 0.69;
+  const leftX = open ? centerX - 0.82 : centerX - 0.37;
+  const rightX = open ? centerX + 0.82 : centerX + 0.37;
+
+  return (
+    <group>
+      <Block
+        position={[centerX, 2.42, -2.66]}
+        size={[1.7, 0.055, 0.07]}
+        color="#b4c5c7"
+        metalness={0.55}
+      />
+      <Block
+        position={[leftX, 1.82, -2.59]}
+        size={[panelWidth, 1.18, 0.08]}
+        color="#29b99b"
+        roughness={0.92}
+      />
+      <Block
+        position={[rightX, 1.82, -2.59]}
+        size={[panelWidth, 1.18, 0.08]}
+        color="#178d79"
+        roughness={0.92}
+      />
+    </group>
+  );
+}
+
+function VillaScene({
+  lightsOn,
+  curtainsOpen,
+  temperature,
+  securityArmed,
+  sceneMode,
+}: VillaProps) {
+  const warmLights = lightsOn || sceneMode === "NIGHT";
+
+  const climateColor = useMemo(() => {
+    if (temperature <= 20) return "#70cfff";
+    if (temperature >= 26) return "#ff956c";
+    return "#29f0c4";
+  }, [temperature]);
+
+  return (
+    <>
+      <color attach="background" args={["#09110f"]} />
+      <fog attach="fog" args={["#09110f", 16, 30]} />
+
+      <ambientLight intensity={0.8} />
+      <directionalLight
+        position={[5, 10, 6]}
+        intensity={2.1}
+        color="#e6fff8"
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      <directionalLight
+        position={[-6, 5, -5]}
+        intensity={0.7}
+        color="#29f0c4"
+      />
+
+      {/* Ground platform */}
+      <Block
+        position={[0, -0.28, 0]}
+        size={[10.2, 0.24, 7.3]}
+        color="#202c2a"
+        metalness={0.15}
+      />
+      <Block
+        position={[0, -0.145, 0]}
+        size={[9.9, 0.045, 7]}
+        color="#31413d"
+      />
+
+      {/* Open-front villa floor */}
+      <Block
+        position={[0, 0, 0]}
+        size={[8.4, 0.16, 5.6]}
+        color="#b9b5a8"
+      />
+
+      {/* Outer walls — front remains open for viewing */}
+      <Block
+        position={[0, 1.38, -2.76]}
+        size={[8.4, 2.76, 0.16]}
+        color="#d7ded8"
+      />
+      <Block
+        position={[-4.12, 1.38, 0]}
+        size={[0.16, 2.76, 5.6]}
+        color="#c8d2cc"
+      />
+      <Block
+        position={[4.12, 1.38, 0]}
+        size={[0.16, 2.76, 5.6]}
+        color="#c8d2cc"
+      />
+
+      {/* Glazed rear windows */}
+      <Block
+        position={[-1.85, 1.65, -2.665]}
+        size={[1.75, 1.25, 0.035]}
+        color="#6eaaa8"
+        emissive="#133d3a"
+        emissiveIntensity={0.35}
+        metalness={0.25}
+        roughness={0.18}
+      />
+      <Block
+        position={[1.65, 1.65, -2.665]}
+        size={[1.75, 1.25, 0.035]}
+        color="#6eaaa8"
+        emissive="#133d3a"
+        emissiveIntensity={0.35}
+        metalness={0.25}
+        roughness={0.18}
+      />
+
+      <Curtains centerX={-1.85} open={curtainsOpen} />
+      <Curtains centerX={1.65} open={curtainsOpen} />
+
+      {/* Interior room dividers */}
+      <Block
+        position={[0.35, 0.9, -1.23]}
+        size={[0.12, 1.8, 2.95]}
+        color="#aebbb4"
+      />
+      <Block
+        position={[-1.72, 0.78, 0.55]}
+        size={[0.12, 1.56, 1.65]}
+        color="#c8d2cc"
+      />
+
+      {/* Living room rug */}
+      <Block
+        position={[-2.65, 0.105, 1.05]}
+        size={[2.05, 0.035, 1.8]}
+        color="#53665f"
+      />
+
+      {/* Sofa */}
+      <Block
+        position={[-2.68, 0.39, 1.02]}
+        size={[1.65, 0.48, 0.55]}
+        color="#324b45"
+      />
+      <Block
+        position={[-2.68, 0.68, 0.79]}
+        size={[1.65, 0.18, 0.15]}
+        color="#45675d"
+      />
+      <Block
+        position={[-3.4, 0.58, 0.78]}
+        size={[0.18, 0.48, 0.55]}
+        color="#45675d"
+      />
+      <Block
+        position={[-1.96, 0.58, 0.78]}
+        size={[0.18, 0.48, 0.55]}
+        color="#45675d"
+      />
+
+      {/* Coffee table */}
+      <Block
+        position={[-2.65, 0.34, 2.0]}
+        size={[1.15, 0.09, 0.62]}
+        color="#a68b69"
+        roughness={0.38}
+      />
+      <Block
+        position={[-3.08, 0.2, 2.0]}
+        size={[0.06, 0.24, 0.06]}
+        color="#303d38"
+      />
+      <Block
+        position={[-2.22, 0.2, 2.0]}
+        size={[0.06, 0.24, 0.06]}
+        color="#303d38"
+      />
+
+      {/* Kitchen island */}
+      <Block
+        position={[2.25, 0.46, 0.75]}
+        size={[2.1, 0.64, 0.83]}
+        color="#7b8b82"
+      />
+      <Block
+        position={[2.25, 0.81, 0.75]}
+        size={[2.22, 0.09, 0.92]}
+        color="#e3e7df"
+        roughness={0.25}
+      />
+      <Block
+        position={[1.7, 0.98, 0.02]}
+        size={[0.4, 0.035, 0.4]}
+        color="#222c28"
+        metalness={0.6}
+      />
+      <Block
+        position={[2.75, 0.98, 0.02]}
+        size={[0.4, 0.035, 0.4]}
+        color="#222c28"
+        metalness={0.6}
+      />
+
+      {/* Bedroom rug and bed */}
+      <Block
+        position={[2.25, 0.11, -1.95]}
+        size={[2.35, 0.035, 1.35]}
+        color="#788e86"
+      />
+      <Block
+        position={[2.25, 0.31, -1.83]}
+        size={[1.62, 0.35, 1.9]}
+        color="#e0ded4"
+      />
+      <Block
+        position={[2.25, 0.51, -2.48]}
+        size={[1.68, 0.54, 0.16]}
+        color="#9bada2"
+      />
+      <Block
+        position={[1.83, 0.53, -2.05]}
+        size={[0.52, 0.12, 0.43]}
+        color="#f7f5eb"
+      />
+      <Block
+        position={[2.65, 0.53, -2.05]}
+        size={[0.52, 0.12, 0.43]}
+        color="#f7f5eb"
+      />
+
+      {/* Bedroom side tables */}
+      <Block
+        position={[1.25, 0.31, -2.05]}
+        size={[0.42, 0.42, 0.42]}
+        color="#9b8469"
+      />
+      <Block
+        position={[3.24, 0.31, -2.05]}
+        size={[0.42, 0.42, 0.42]}
+        color="#9b8469"
+      />
+
+      {/* Front entrance path */}
+      <Block
+        position={[0, -0.015, 3.15]}
+        size={[1.25, 0.04, 0.75]}
+        color="#71817a"
+      />
+
+      {/* Ceiling lights in each zone */}
+      <Lamp position={[-2.65, 2.72, 0.05]} active={warmLights} />
+      <Lamp position={[2.2, 2.72, 0.05]} active={warmLights} />
+      <Lamp position={[2.2, 2.72, -2.1]} active={warmLights} />
+      <Lamp position={[-2.65, 2.72, -2.1]} active={warmLights} />
+
+      {/* Climate status indicator */}
+      <mesh position={[0.18, 1.5, -2.64]}>
+        <sphereGeometry args={[0.105, 24, 24]} />
+        <meshStandardMaterial
+          color={climateColor}
+          emissive={climateColor}
+          emissiveIntensity={2.2}
+        />
+      </mesh>
+
+      {/* Entrance security indicator */}
+      <mesh position={[0, 0.35, 2.78]}>
+        <sphereGeometry args={[0.12, 24, 24]} />
+        <meshStandardMaterial
+          color={securityArmed ? "#ff4d6d" : "#29f0c4"}
+          emissive={securityArmed ? "#ff1744" : "#29f0c4"}
+          emissiveIntensity={2.2}
+        />
+      </mesh>
+
+      {/* Mint perimeter accent */}
+      <Block
+        position={[0, 0.1, 2.79]}
+        size={[8.15, 0.025, 0.035]}
+        color="#29f0c4"
+        emissive="#29f0c4"
+        emissiveIntensity={0.75}
+      />
+
+      <ContactShadows
+        position={[0, -0.145, 0]}
+        opacity={0.42}
+        scale={12}
+        blur={2.5}
+        far={5}
+      />
+
+      <OrbitControls
+        makeDefault
+        enablePan
+        enableZoom
+        enableRotate
+        minDistance={7}
+        maxDistance={17}
+        minPolarAngle={0.35}
+        maxPolarAngle={1.45}
+        target={[0, 0.85, 0]}
+        autoRotate={false}
+        enableDamping
+        dampingFactor={0.08}
+      />
+    </>
+  );
+}
+
+export default function SmartVilla3DCanvas(props: VillaProps) {
+  return (
+    <Canvas
+      shadows
+      dpr={[1, 1.75]}
+      camera={{ position: [10, 8, 11], fov: 39 }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+    >
+      <VillaScene {...props} />
+    </Canvas>
+  );
+}

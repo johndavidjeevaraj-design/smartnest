@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local backups — keep out of GitHub
+*.backup
+*.backup-*
+*.before-*
+*.smartnest-backup
+*.broken-backup
+*.pre-blue-cleanup
+
+# Local dependency and build files
+node_modules/
+.next/
+.env*
+!.env.example
+.DS_Store

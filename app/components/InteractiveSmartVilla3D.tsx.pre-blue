@@ -1,0 +1,743 @@
+
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Canvas } from "@react-three/fiber";
+
+import { ContactShadows, OrbitControls } from "@react-three/drei";
+import SmartNestVillaAsset from "./SmartNestVillaAsset";
+
+type Room = "Exterior" | "Living Room" | "Bedroom" | "Security Room" | "Utility Room";
+
+type Vec3 = [number, number, number];
+
+type VillaProps = {
+  lightsOn: boolean;
+  curtainsOpen: boolean;
+  rgbColor: string;
+  livingRoomOn: boolean;
+  bedroomOn: boolean;
+  outdoorLightsOn: boolean;
+  room: Room;
+  setRoom: (room: Room) => void;
+  enterHome: () => void;
+  toggleLights: () => void;
+  toggleCurtains: () => void;
+  climateOn: boolean;
+  temperature: number;
+  setTemperature: (value: number) => void;
+  securityArmed: boolean;
+  setSecurityArmed: (value: boolean) => void;
+  waterAuto: boolean;
+  setWaterAuto: (value: boolean) => void;
+  gateOpen: boolean;
+  setGateOpen: (value: boolean) => void;
+  lockOpen: boolean;
+  setLockOpen: (value: boolean) => void;
+  alarmOn: boolean;
+  setAlarmOn: (value: boolean) => void;
+  cctvOn: boolean;
+  setCctvOn: (value: boolean) => void;
+};
+
+function Block({
+  position,
+  size,
+  color,
+  roughness = 0.8,
+  metalness = 0,
+  emissive = "#000000",
+  emissiveIntensity = 0,
+  onClick,
+}: {
+  position: Vec3;
+  size: Vec3;
+  color: string;
+  roughness?: number;
+  metalness?: number;
+  emissive?: string;
+  emissiveIntensity?: number;
+  onClick?: () => void;
+}) {
+  return (
+    <mesh
+      position={position}
+      castShadow
+      receiveShadow
+      onClick={onClick ? (event) => {
+        event.stopPropagation();
+        onClick();
+      } : undefined}
+    >
+      <boxGeometry args={size} />
+      <meshStandardMaterial
+        color={color}
+        roughness={roughness}
+        metalness={metalness}
+        emissive={emissive}
+        emissiveIntensity={emissiveIntensity}
+      />
+    </mesh>
+  );
+}
+
+function Device({
+  position,
+  color,
+  label,
+  onClick,
+}: {
+  position: Vec3;
+  color: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <group position={position} onClick={(event) => {
+      event.stopPropagation();
+      onClick();
+    }}>
+      <mesh>
+        <boxGeometry args={[0.48, 0.34, 0.09]} />
+        <meshStandardMaterial color="#202a26" metalness={0.55} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0, 0.055]}>
+        <boxGeometry args={[0.34, 0.19, 0.025]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.7}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function VillaScene(props: VillaProps) {
+  const {
+    lightsOn, curtainsOpen, rgbColor, livingRoomOn, bedroomOn,
+    outdoorLightsOn, room, setRoom, enterHome, toggleLights,
+    toggleCurtains, climateOn, temperature, setTemperature,
+    securityArmed, setSecurityArmed, waterAuto, setWaterAuto,
+    gateOpen, setGateOpen, lockOpen, setLockOpen, alarmOn,
+    setAlarmOn, cctvOn, setCctvOn,
+  } = props;
+
+  const exteriorOn = lightsOn && outdoorLightsOn;
+  const inside = room !== "Exterior";
+  const zoneOn = room === "Bedroom" ? bedroomOn : livingRoomOn;
+
+  return (
+    <group>
+      {inside ? (
+        <>
+          {/* Interior floor and open-front room */}
+          <Block position={[0, -0.12, 0]} size={[9, 0.22, 8]} color="#8b8172" />
+          <Block position={[0, 2.1, -3.9]} size={[9, 4.2, 0.18]} color="#d8d3c8" />
+          <Block position={[-4.4, 2.1, 0]} size={[0.18, 4.2, 8]} color="#bdb9ae" />
+          <Block position={[4.4, 2.1, 0]} size={[0.18, 4.2, 8]} color="#bdb9ae" />
+
+          {/* Room-specific wall features */}
+          <Block position={[0, 3.65, -3.77]} size={[8.4, 0.08, 0.08]} color="#4d5c50" />
+          <Block position={[0, 0.02, 0]} size={[8.6, 0.035, 7.6]} color="#a99d89" />
+
+          {room === "Living Room" && (
+            <>
+              {/* Sofa */}
+              <Block position={[-1.55, 0.48, -1.35]} size={[2.8, 0.65, 1]} color="#68766a" />
+              <Block position={[-2.7, 0.85, -1.05]} size={[0.48, 0.95, 1.3]} color="#536456" />
+              <Block position={[-0.4, 0.85, -1.05]} size={[0.48, 0.95, 1.3]} color="#536456" />
+              <Block position={[-1.55, 0.88, -1.75]} size={[2.7, 0.25, 0.25]} color="#899386" />
+
+              {/* TV wall */}
+              <Block position={[1.65, 1.55, -3.72]} size={[2.8, 1.7, 0.12]} color="#765b43" />
+              <Block position={[1.65, 1.7, -3.62]} size={[2.2, 1.2, 0.08]} color="#101c20" />
+              <Block position={[1.65, 1.7, -3.56]} size={[1.95, 0.92, 0.025]} color="#274b50" emissive="#0d454b" emissiveIntensity={0.4} />
+
+              {/* Smart touch switch */}
+              <Device
+                position={[-3.85, 1.45, -1.7]}
+                color={lightsOn && livingRoomOn ? rgbColor : "#56615a"}
+                label="Light switch"
+                onClick={toggleLights}
+              />
+
+              {/* Curtains */}
+              <Block
+                position={[3.55, 1.8, -3.68]}
+                size={[0.35, 2.7, 0.18]}
+                color={curtainsOpen ? "#d8d7ca" : "#53665a"}
+              />
+              <Block
+                position={[2.55, 1.8, -3.68]}
+                size={[0.35, 2.7, 0.18]}
+                color={curtainsOpen ? "#d8d7ca" : "#53665a"}
+              />
+
+              {/* Coffee table */}
+              <Block position={[-1.2, 0.45, 0.15]} size={[1.7, 0.12, 0.85]} color="#654c36" />
+              {[-1.8, -0.6].map((x) => (
+                <Block key={x} position={[x, 0.21, 0.15]} size={[0.07, 0.48, 0.07]} color="#383c37" />
+              ))}
+            </>
+          )}
+
+          {room === "Bedroom" && (
+            <>
+              {/* Bed and headboard */}
+              <Block position={[0, 0.65, -1.6]} size={[3.2, 0.48, 3.3]} color="#f0ede4" />
+              <Block position={[0, 1.1, -3.12]} size={[3.3, 1.25, 0.2]} color="#70513c" />
+              <Block position={[-0.78, 0.95, -1.05]} size={[1.15, 0.22, 1]} color="#c5d0c7" />
+              <Block position={[0.68, 0.95, -1.05]} size={[1.15, 0.22, 1]} color="#c5d0c7" />
+              <Block position={[0, 0.91, -1.6]} size={[2.8, 0.16, 1.8]} color="#9baa9a" />
+
+              {/* Bedroom switch */}
+              <Device
+                position={[-3.8, 1.45, -1.6]}
+                color={lightsOn && bedroomOn ? rgbColor : "#56615a"}
+                label="Bedroom switch"
+                onClick={() => setRoom("Bedroom")}
+              />
+
+              {/* Bedside tables and lamps */}
+              {[-2.25, 2.25].map((x) => (
+                <group key={x}>
+                  <Block position={[x, 0.45, -2.25]} size={[0.65, 0.65, 0.65]} color="#5c4634" />
+                  <mesh position={[x, 1.05, -2.25]}>
+                    <cylinderGeometry args={[0.19, 0.24, 0.35, 16]} />
+                    <meshStandardMaterial
+                      color={lightsOn && bedroomOn ? "#ffe0a4" : "#8d9189"}
+                      emissive={lightsOn && bedroomOn ? "#ffbd67" : "#000000"}
+                      emissiveIntensity={lightsOn && bedroomOn ? 1 : 0}
+                    />
+                  </mesh>
+                </group>
+              ))}
+            </>
+          )}
+
+          {room === "Security Room" && (
+            <>
+              <Block position={[0, 1.6, -3.72]} size={[5.5, 2.5, 0.12]} color="#303a35" />
+              {[-1.8, 0, 1.8].map((x) =>
+                [-0.45, 0.65].map((y) => (
+                  <Block
+                    key={`${x}-${y}`}
+                    position={[x, 1.6 + y, -3.62]}
+                    size={[1.55, 0.85, 0.06]}
+                    color={cctvOn ? "#193b3c" : "#181d1b"}
+                    emissive={cctvOn ? "#0e5553" : "#000000"}
+                    emissiveIntensity={cctvOn ? 0.6 : 0}
+                  />
+                ))
+              )}
+              <Device position={[-3.8, 1.45, -1.7]} color={cctvOn ? "#29f0c4" : "#59625c"} label="CCTV" onClick={() => setCctvOn(!cctvOn)} />
+              <Device position={[3.8, 1.45, -1.7]} color={alarmOn ? "#ff5479" : "#59625c"} label="Alarm" onClick={() => setAlarmOn(!alarmOn)} />
+            </>
+          )}
+
+          {room === "Utility Room" && (
+            <>
+              <Block position={[-1.8, 1.2, -3.3]} size={[1.3, 2.2, 1.1]} color="#5c6960" />
+              <Block position={[1.5, 1.2, -3.3]} size={[1.3, 2.2, 1.1]} color="#777f77" />
+              <Block position={[0, 2.9, -3.4]} size={[4.8, 0.18, 1.4]} color="#343e38" />
+              <Device position={[-3.8, 1.45, -1.7]} color={waterAuto ? "#29f0c4" : "#59625c"} label="Water control" onClick={() => setWaterAuto(!waterAuto)} />
+              <Block position={[0, 0.65, 0.2]} size={[1.5, 1.2, 1.5]} color="#7a8b8b" />
+              <Block position={[0, 1.35, 0.2]} size={[1.25, 0.12, 1.25]} color="#a6d2d0" emissive="#287f83" emissiveIntensity={0.25} />
+            </>
+          )}
+
+          {/* Climate panel available in every room */}
+          <Device
+            position={[3.8, 1.45, 0.5]}
+            color={climateOn ? "#29f0c4" : "#59625c"}
+            label="Climate"
+            onClick={() => setTemperature(temperature >= 30 ? 16 : temperature + 1)}
+          />
+
+          <Block
+            position={[0, 3.6, -3.7]}
+            size={[1.7, 0.32, 0.2]}
+            color="#e6e5dc"
+          />
+
+          <mesh position={[0, 3.35, -3.55]}>
+            <boxGeometry args={[0.85, 0.12, 0.12]} />
+            <meshStandardMaterial color={climateOn ? "#29f0c4" : "#7a827b"} emissive={climateOn ? "#29f0c4" : "#000000"} emissiveIntensity={0.4} />
+          </mesh>
+
+          {lightsOn && zoneOn && (
+            <pointLight position={[0, 3.6, 0]} color={rgbColor} intensity={5} distance={11} decay={2} />
+          )}
+
+          <ambientLight intensity={0.8} />
+          <pointLight position={[0, 3.5, 2]} intensity={1.6} color="#fff1d8" distance={12} />
+        </>
+      ) : (
+        <>
+          {/* Exterior garden */}
+          <Block position={[0, -0.08, 0]} size={[15, 0.12, 12]} color="#485c47" />
+          <Block position={[0, 0.18, 0]} size={[8.6, 0.36, 5.6]} color="#777d75" />
+
+          
+          {/* Real architectural villa from the exported Blender GLB */}
+          <SmartNestVillaAsset
+            lightsOn={lightsOn}
+            curtainsOpen={curtainsOpen}
+            rgbColor={rgbColor}
+            livingRoomOn={livingRoomOn}
+            bedroomOn={bedroomOn}
+            outdoorLightsOn={outdoorLightsOn}
+          />
+
+          {/* Invisible front-entry click target */}
+          <mesh
+            position={[0, 1.4, 3.9]}
+            onClick={(event) => {
+              event.stopPropagation();
+              enterHome();
+            }}
+          >
+            <boxGeometry args={[5.5, 2.8, 0.15]} />
+            <meshBasicMaterial
+              transparent
+              opacity={0}
+              depthWrite={false}
+            />
+          </mesh>
+
+
+          {/* Automated gate and driveway */}
+          <Block position={[4.65, 0, 5.15]} size={[4.4, 0.08, 1.4]} color="#626a62" />
+          {Array.from({ length: 13 }, (_, i) => (
+            <Block
+              key={i}
+              position={[2.65 + i * 0.33, 0.85, 5.12]}
+              size={[0.08, 1.55, 0.13]}
+              color="#303a35"
+              onClick={() => setGateOpen(!gateOpen)}
+            />
+          ))}
+          <Block position={[4.65, 1.65, 5.12]} size={[4.5, 0.12, 0.16]} color="#8b958c" onClick={() => setGateOpen(!gateOpen)} />
+
+          {/* Clickable smart-home devices */}
+          <Device position={[4.15, 1.3, 2.9]} color="#29f0c4" label="Doorbell" onClick={() => setRoom("Security Room")} />
+          <Device position={[3.95, 1.9, 2.9]} color={lockOpen ? "#29f0c4" : "#f2b76c"} label="Smart lock" onClick={() => setLockOpen(!lockOpen)} />
+          <Device position={[-3.65, 2.3, 2.8]} color={cctvOn ? "#29f0c4" : "#6a756e"} label="CCTV" onClick={() => setCctvOn(!cctvOn)} />
+          <Device position={[-2.9, 1.5, 2.8]} color={alarmOn ? "#ff5479" : "#6a756e"} label="Alarm" onClick={() => setAlarmOn(!alarmOn)} />
+
+          {/* Pool */}
+          <Block position={[-5.15, 0.03, 1.2]} size={[3.3, 0.2, 4.6]} color="#c6c8bd" />
+          <Block position={[-5.15, 0.145, 1.2]} size={[2.95, 0.035, 4.2]} color={exteriorOn ? "#168caa" : "#123d46"} metalness={0.25} roughness={0.18} emissive={exteriorOn ? "#087d9b" : "#000000"} emissiveIntensity={0.4} />
+
+          {/* Planter beds and shrubs */}
+          {[-5.1, 5.1].map((x) => (
+            <Block key={x} position={[x, 0.18, -1.8]} size={[1.35, 0.36, 2.2]} color="#373e38" />
+          ))}
+          {[-5.1, 5.1].flatMap((x) => [-2.4, -1.8, -1.2].map((z, i) => (
+            <mesh key={`${x}-${i}`} position={[x, 0.52, z]} scale={[0.38, 0.3, 0.38]} castShadow>
+              <sphereGeometry args={[1, 16, 12]} />
+              <meshStandardMaterial color={i % 2 ? "#456b49" : "#31583d"} roughness={0.95} />
+            </mesh>
+          )))}
+
+          {/* Garden trees */}
+          {[
+            [-5.7, -3.4, 0.8], [-4.1, -3.8, 0.65],
+            [4.3, -3.4, 0.75], [5.8, -3.8, 0.85],
+            [-6.1, 3.9, 0.7], [6.1, 3.7, 0.7],
+          ].map(([x, z, scale], i) => (
+            <group key={i} position={[x, 0, z]} scale={scale}>
+              <mesh position={[0, 0.7, 0]} castShadow>
+                <cylinderGeometry args={[0.13, 0.2, 1.4, 12]} />
+                <meshStandardMaterial color="#554335" />
+              </mesh>
+              {[0, 1, 2].map((layer) => (
+                <mesh key={layer} position={[layer % 2 ? 0.08 : -0.08, 1.45 + layer * 0.48, 0]} castShadow>
+                  <sphereGeometry args={[0.72 - layer * 0.1, 18, 14]} />
+                  <meshStandardMaterial color={["#294b34", "#426447", "#527653"][layer]} roughness={0.95} />
+                </mesh>
+              ))}
+            </group>
+          ))}
+
+          {/* Exterior lights */}
+          {exteriorOn && (
+            <>
+              <pointLight position={[3.2, 2.2, 3.3]} color={rgbColor} intensity={4} distance={6} />
+              <pointLight position={[-5.1, 0.65, -2.3]} color="#ffe0ad" intensity={1.2} distance={3.5} />
+              <pointLight position={[5.1, 0.65, -2.3]} color="#ffe0ad" intensity={1.2} distance={3.5} />
+            </>
+          )}
+
+          <ambientLight intensity={0.55} />
+          <directionalLight position={[-8, 12, 7]} intensity={1.6} castShadow />
+        </>
+      )}
+    </group>
+  );
+}
+
+export default function InteractiveSmartVilla3D() {
+  const [lightsOn, setLightsOn] = useState(true);
+  const [curtainsOpen, setCurtainsOpen] = useState(true);
+  const [rgbColor, setRgbColor] = useState("#29f0c4");
+  const [nightMode, setNightMode] = useState(true);
+  const [temperature, setTemperature] = useState(22);
+  const [securityArmed, setSecurityArmed] = useState(true);
+  const [climateOn, setClimateOn] = useState(true);
+  const [livingRoomOn, setLivingRoomOn] = useState(true);
+  const [bedroomOn, setBedroomOn] = useState(false);
+  const [outdoorLightsOn, setOutdoorLightsOn] = useState(true);
+
+  const [room, setRoom] = useState<Room>("Exterior");
+  const [waterAuto, setWaterAuto] = useState(true);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [lockOpen, setLockOpen] = useState(false);
+  const [alarmOn, setAlarmOn] = useState(false);
+  const [cctvOn, setCctvOn] = useState(true);
+  
+  const [motionEnabled, setMotionEnabled] = useState(true);
+const [motionDetected, setMotionDetected] = useState(false);
+const [motionCountdown, setMotionCountdown] = useState(10);
+const motionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+const manualOverride = useRef(false);
+  const colors = ["#29f0c4", "#ffffff", "#ffb36b", "#4e86ff", "#bb6bff", "#ff5479"];
+ const enterHome = () => setRoom("Living Room");
+
+const toggleLights = () => {
+  manualOverride.current = true;
+  setLightsOn((current) => !current);
+};
+
+const toggleCurtains = () => setCurtainsOpen((v) => !v);
+
+const handleVillaPointerMove = useCallback(() => {
+  if (!motionEnabled) return;
+
+  manualOverride.current = false;
+  setMotionDetected(true);
+  setLightsOn(true);
+  setMotionCountdown(10);
+
+  if (motionTimer.current) {
+    clearTimeout(motionTimer.current);
+  }
+
+  const startedAt = Date.now();
+
+  const tick = () => {
+    const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+    const remaining = Math.max(0, 10 - elapsed);
+
+    setMotionCountdown(remaining);
+
+    if (remaining > 0) {
+      motionTimer.current = setTimeout(tick, 250);
+      return;
+    }
+
+    setMotionDetected(false);
+
+    if (!manualOverride.current) {
+      setLightsOn(false);
+    }
+  };
+
+  motionTimer.current = setTimeout(tick, 250);
+}, [motionEnabled]);
+
+useEffect(() => {
+  return () => {
+    if (motionTimer.current) {
+      clearTimeout(motionTimer.current);
+    }
+  };
+}, []);
+
+  const rooms: Room[] = ["Exterior", "Living Room", "Bedroom", "Security Room", "Utility Room"];
+
+  return (
+    <section className="sn-villa">
+      <div className="sn-villa-heading">
+        <span className="sn-villa-eyebrow">SMARTNEST · INTERACTIVE EXPERIENCE</span>
+        <h2>Step inside intelligent living.</h2>
+        <p>Explore the villa, interact with smart devices, and experience connected living.</p>
+      </div>
+
+      <div
+  className="sn-villa-stage"
+  onPointerMove={(event) => {
+    // Ignore movement over the control panel.
+    if (
+      (event.target as HTMLElement).closest(".sn-villa-controls")
+    ) {
+      return;
+    }
+
+    handleVillaPointerMove();
+  }}
+>
+        
+
+<div className="sn-villa-photo">
+  <img
+    key={room}
+    className="sn-villa-photo-image"
+    src={
+      room === "Exterior"
+        ? "/images/smartnest-villa.png"
+        : room === "Living Room"
+          ? "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=85"
+          : room === "Bedroom"
+            ? "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1800&q=85"
+            : room === "Utility Room"
+              ? "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=85"
+              : "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1800&q=85"
+    }
+    alt={`${room} smart home demonstration`}
+  />
+
+  <div
+    className={`sn-villa-light-overlay ${
+      lightsOn ? "is-lit" : "is-dark"
+    }`}
+  />
+
+  <div className="sn-villa-photo-caption">
+    <span>{room.toUpperCase()}</span>
+    <strong>{lightsOn ? "LIGHTS ON" : "LIGHTS OFF"}</strong>
+  </div>
+</div>
+
+
+
+        <div className="sn-villa-controls">
+          <div className="sn-villa-controls-title">
+            <span>SMARTNEST CONTROL</span>
+            <span className="sn-villa-live">
+  <i /> LIVE DEMO
+</span>
+
+<button
+  type="button"
+  className="sn-villa-pill"
+  aria-pressed={motionEnabled}
+  onClick={() => {
+    setMotionEnabled((enabled) => {
+      const next = !enabled;
+
+      if (!next) {
+        if (motionTimer.current) {
+          clearTimeout(motionTimer.current);
+          motionTimer.current = null;
+        }
+
+        setMotionDetected(false);
+        manualOverride.current = false;
+        setLightsOn(false);
+      }
+
+      return next;
+    });
+  }}
+>
+  {motionEnabled
+  ? motionDetected
+    ? `● MOTION DETECTED · ${motionCountdown}s`
+    : "● MOTION SENSOR ON"
+  : "○ MOTION SENSOR OFF"}
+</button>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Explore the villa</p>
+            <p className="sn-villa-panel-description">Select an area to enter that room.</p>
+            <div className="sn-villa-room-nav">
+              {rooms.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setRoom(item)}
+                  className={room === item ? "sn-villa-pill secure" : "sn-villa-pill"}
+                >
+                  {item === "Exterior" ? "🏡" : item === "Living Room" ? "🛋️" : item === "Bedroom" ? "🛏️" : item === "Security Room" ? "📹" : "💧"} {item}
+                </button>
+              ))}
+            </div>
+            {room === "Exterior" && (
+              <button type="button" className="sn-villa-action" onClick={enterHome}>
+                Enter through the front door →
+              </button>
+            )}
+            {room !== "Exterior" && (
+              <button type="button" className="sn-villa-action" onClick={() => setRoom("Exterior")}>
+                ← Return outside
+              </button>
+            )}
+          </div>
+
+          <button type="button" onClick={toggleLights} className="sn-villa-control">
+            <span>☀</span><span><strong>Master lighting</strong><small>{lightsOn ? "On" : "Off"}</small></span>
+            <i className={lightsOn ? "sn-switch active" : "sn-switch"} />
+          </button>
+
+          <button type="button" onClick={toggleCurtains} className="sn-villa-control">
+            <span>▥</span><span><strong>Motorised curtains</strong><small>{curtainsOpen ? "Open" : "Closed"}</small></span>
+            <i className={curtainsOpen ? "sn-switch active" : "sn-switch"} />
+          </button>
+
+          <button type="button" onClick={() => setNightMode((v) => !v)} className="sn-villa-control">
+            <span>{nightMode ? "🌙" : "☀"}</span><span><strong>Day / night</strong><small>{nightMode ? "Night" : "Day"}</small></span>
+            <i className={nightMode ? "sn-switch active" : "sn-switch"} />
+          </button>
+
+          <div className="sn-villa-color-control">
+            <strong>RGB lighting scenes</strong>
+            <div className="sn-villa-swatches">
+              {colors.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  aria-label={`Set lighting colour ${color}`}
+                  aria-pressed={rgbColor === color}
+                  onClick={() => { setRgbColor(color); setLightsOn(true); }}
+                  style={{ background: color, outline: rgbColor === color ? "2px solid white" : "2px solid transparent" }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Room lighting</p>
+            {[
+              { name: "Living room", value: livingRoomOn, toggle: () => setLivingRoomOn((v) => !v) },
+              { name: "Bedroom", value: bedroomOn, toggle: () => setBedroomOn((v) => !v) },
+              { name: "Outdoor lights", value: outdoorLightsOn, toggle: () => setOutdoorLightsOn((v) => !v) },
+            ].map((item) => (
+              <div className="sn-villa-room" key={item.name}>
+                <div><p>{item.name}</p><small>Independent lighting zone</small></div>
+                <button type="button" className={item.value ? "sn-villa-pill secure" : "sn-villa-pill"} onClick={item.toggle}>
+                  {item.value ? "ON" : "OFF"}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="sn-villa-panel">
+            <div className="sn-villa-panel-heading">
+              <div><p className="sn-villa-panel-title">Climate control</p><p className="sn-villa-panel-description">Smart AC temperature</p></div>
+              <button type="button" className={climateOn ? "sn-villa-pill secure" : "sn-villa-pill"} onClick={() => setClimateOn((v) => !v)}>
+                {climateOn ? "ON" : "OFF"}
+              </button>
+            </div>
+            <div className="sn-villa-temperature">
+              <button type="button" disabled={!climateOn} onClick={() => setTemperature((v) => Math.max(16, v - 1))}>−</button>
+              <div><p>{temperature}°</p><small>Celsius</small></div>
+              <button type="button" disabled={!climateOn} onClick={() => setTemperature((v) => Math.min(30, v + 1))}>+</button>
+            </div>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Gate automation</p>
+            <p className="sn-villa-panel-description">Sliding gate · mobile / keyfob demo</p>
+            <button type="button" className={gateOpen ? "sn-villa-action warning" : "sn-villa-action"} onClick={() => setGateOpen((v) => !v)}>
+              {gateOpen ? "Close gate" : "Open gate"}
+            </button>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Smart door lock</p>
+            <p className="sn-villa-panel-description">Biometric / PIN / RFID demo</p>
+            <button type="button" className={lockOpen ? "sn-villa-action warning" : "sn-villa-action"} onClick={() => setLockOpen((v) => !v)}>
+              {lockOpen ? "Lock door" : "Unlock door"}
+            </button>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Security & surveillance</p>
+            <p className="sn-villa-panel-description">CCTV, intrusion alarm and mobile alerts</p>
+            <div className="sn-villa-room">
+              <div><p>AI CCTV cameras</p><small>{cctvOn ? "Demo active" : "Demo disabled"}</small></div>
+              <button type="button" className={cctvOn ? "sn-villa-pill secure" : "sn-villa-pill"} onClick={() => setCctvOn((v) => !v)}>{cctvOn ? "ON" : "OFF"}</button>
+            </div>
+            <div className="sn-villa-room">
+              <div><p>Intrusion alarm</p><small>{alarmOn ? "Alarm active" : securityArmed ? "Armed · monitoring demo" : "Disarmed"}</small></div>
+              <button type="button" className={alarmOn ? "sn-villa-pill warning" : "sn-villa-pill"} onClick={() => setAlarmOn((v) => !v)}>{alarmOn ? "SILENCE" : "TEST"}</button>
+            </div>
+            <button type="button" className={securityArmed ? "sn-villa-action warning" : "sn-villa-action"} onClick={() => setSecurityArmed((v) => !v)}>
+              {securityArmed ? "Disarm security system" : "Arm security system"}
+            </button>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Automatic water control</p>
+            <p className="sn-villa-panel-description">Pump, tank level and dry-run protection demo</p>
+            <button type="button" className={waterAuto ? "sn-villa-action" : "sn-villa-action warning"} onClick={() => setWaterAuto((v) => !v)}>
+              {waterAuto ? "Auto pump control: ON" : "Auto pump control: OFF"}
+            </button>
+          </div>
+
+          <div className="sn-villa-panel">
+            <p className="sn-villa-panel-title">Services inside this villa</p>
+            <p className="sn-villa-panel-description">
+              Wireless automation · Voice assistants · Gate automation · Video doorbell · Smart lock · CCTV · Alarm system · Automatic water control
+            </p>
+            <a className="sn-villa-action" href="https://www.smartnests.in/index.html#contact">Request a SmartNest quote ↗</a>
+          </div>
+
+          <p className="sn-villa-hint">Drag to rotate · Scroll to zoom · Click the entrance to enter</p>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .sn-villa { background:#101412; color:#f4f6f3; padding:84px 5%; overflow:hidden; }
+        .sn-villa-heading { max-width:760px; margin:0 auto 34px; text-align:center; }
+        .sn-villa-eyebrow { color:#29f0c4; font-size:11px; letter-spacing:.2em; font-weight:700; }
+        .sn-villa-heading h2 { font-size:clamp(30px,4.5vw,54px); letter-spacing:-.045em; line-height:1.1; margin:16px 0; }
+        .sn-villa-heading p { color:#a7b0aa; line-height:1.8; font-size:15px; }
+        .sn-villa-stage { position:relative; width:100%; height:min(760px,78vw); min-height:600px; overflow:hidden; border:1px solid #303a34; border-radius:22px; background:#111613; }
+        .sn-villa-stage :global(canvas) { display:block; touch-action:pan-y; }
+        .sn-villa-controls { position:absolute; top:18px; right:18px; width:285px; max-height:calc(100% - 36px); overflow-y:auto; padding:16px; background:rgba(13,19,16,.94); border:1px solid rgba(255,255,255,.12); border-radius:15px; backdrop-filter:blur(18px); scrollbar-width:thin; scrollbar-color:#46534a transparent; }
+        .sn-villa-controls-title { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:14px; font-size:10px; letter-spacing:.12em; font-weight:700; }
+        .sn-villa-live { display:flex; align-items:center; gap:5px; color:#29f0c4; font-size:9px; }
+        .sn-villa-live i { width:6px; height:6px; border-radius:50%; background:#29f0c4; }
+        .sn-villa-control { width:100%; display:flex; align-items:center; gap:11px; padding:12px 0; color:white; background:transparent; border:0; border-top:1px solid #29322c; text-align:left; cursor:pointer; }
+        .sn-villa-control > span:first-child { width:30px; height:30px; flex:0 0 30px; display:grid; place-items:center; color:#29f0c4; background:#202c26; border-radius:9px; font-size:18px; }
+        .sn-villa-control > span:nth-child(2) { flex:1; display:grid; gap:4px; }
+        .sn-villa-control strong,.sn-villa-color-control strong { font-size:12px; font-weight:600; }
+        .sn-villa-control small { font-size:10px; color:#9ba79f; }
+        .sn-switch { width:27px; height:15px; flex:0 0 27px; background:#4a514c; border-radius:20px; position:relative; }
+        .sn-switch::after { content:""; position:absolute; top:2px; left:2px; width:11px; height:11px; border-radius:50%; background:white; transition:transform .2s; }
+        .sn-switch.active { background:#168f76; }
+        .sn-switch.active::after { transform:translateX(12px); }
+        .sn-villa-color-control { padding-top:14px; border-top:1px solid #29322c; }
+        .sn-villa-swatches { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+        .sn-villa-swatches button { width:23px; height:23px; border:0; border-radius:50%; cursor:pointer; }
+        .sn-villa-panel { margin-top:12px; padding:12px; border:1px solid rgba(255,255,255,.1); border-radius:13px; background:rgba(255,255,255,.045); }
+        .sn-villa-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .sn-villa-panel-title,.sn-villa-room p { margin:0; color:#f4f6f3; font-size:12px; font-weight:600; }
+        .sn-villa-panel-description,.sn-villa-room small { margin:4px 0 0; color:#9ba79f; font-size:10px; line-height:1.5; }
+        .sn-villa-pill { border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:7px 10px; color:#d6ddd8; background:rgba(255,255,255,.04); font-size:10px; font-weight:700; cursor:pointer; }
+        .sn-villa-pill.secure { color:#8cf6d9; border-color:rgba(41,240,196,.35); background:rgba(41,240,196,.09); }
+        .sn-villa-pill.warning,.sn-villa-action.warning { color:#ffd2b8; border-color:rgba(255,120,90,.4); background:rgba(255,100,75,.1); }
+        .sn-villa-room { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-top:1px solid rgba(255,255,255,.09); }
+        .sn-villa-room-nav { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+        .sn-villa-room-nav button { text-align:left; }
+        .sn-villa-action { display:block; width:100%; margin-top:10px; padding:10px 12px; border:1px solid rgba(41,240,196,.3); border-radius:10px; background:rgba(41,240,196,.08); color:#9cf8df; font-size:11px; font-weight:700; text-align:center; text-decoration:none; cursor:pointer; }
+        .sn-villa-temperature { display:flex; align-items:center; justify-content:space-between; margin-top:15px; text-align:center; }
+        .sn-villa-temperature > button { width:34px; height:34px; border:1px solid rgba(255,255,255,.15); border-radius:50%; color:white; background:transparent; font-size:19px; cursor:pointer; }
+        .sn-villa-temperature > button:disabled { opacity:.35; cursor:not-allowed; }
+        .sn-villa-temperature p { margin:0; color:white; font-size:27px; font-weight:300; }
+        .sn-villa-temperature small { color:#9ba79f; font-size:10px; }
+        .sn-villa-hint { margin:16px 0 0; color:#8e9a92; font-size:10px; line-height:1.7; }
+        @media (max-width:700px) {
+          .sn-villa { padding:56px 16px; }
+          .sn-villa-stage { height:1000px; min-height:1000px; }
+          .sn-villa-controls { top:auto; right:10px; bottom:10px; left:10px; width:auto; max-height:68%; padding:13px; }
+          .sn-villa-heading p { font-size:13px; }
+        }
+      `}</style>
+    </section>
+  );
+}
