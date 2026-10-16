@@ -10,7 +10,6 @@ import {
   Droplets,
   Fingerprint,
   Globe,
-  Lightbulb,
   Lock,
   Mail,
   MapPin,
@@ -18,7 +17,6 @@ import {
   Phone,
   ShieldCheck,
   Thermometer,
-  Waves,
   Wifi,
   Zap,
 } from "lucide-react";

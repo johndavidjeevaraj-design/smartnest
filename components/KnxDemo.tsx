@@ -12,7 +12,6 @@ import {
   Lightbulb,
   Moon,
   ShieldCheck,
-  Sofa,
   Sun,
   Sunset,
   Thermometer,
