@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, type Transition } from "motion/react";
 import { useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 
 interface ImageItem {
@@ -16,29 +16,39 @@ interface ImageFlipProps {
   images: ImageItem[];
   fit: "cover" | "contain";
   rounded: number;
-  transition: any;
+  transition: Transition;
   tilt: boolean;
   tiltOptions: TiltOptions;
   style?: CSSProperties;
 }
 
 const DEFAULT_ITEMS: ImageItem[] = [
-  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/12e8b0be-f114-4134-1ab7-53116bfc2800/w=800" }, focusY: 50 },
-  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/08f4d1ae-43ca-4879-80f4-c1e7969eef00/w=800" }, focusY: 50 },
-  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/75367195-8fa6-4ff1-d0ce-68df4694a700/w=800" }, focusY: 50 },
-  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/f0b7559d-35e2-4feb-ae16-7ca802b21f00/w=800" }, focusY: 50 },
+  { image: { src: "/images/scene-villa-dusk.jpg", alt: "Modern villa exterior at dusk" }, focusY: 50 },
+  { image: { src: "/images/scene-living-ambient.jpg", alt: "Living room ambient lighting" }, focusY: 50 },
+  { image: { src: "/images/scene-foyer.jpg", alt: "Entrance foyer lighting" }, focusY: 50 },
+  { image: { src: "/images/scene-terrace.jpg", alt: "Terrace and pool at dusk" }, focusY: 50 },
 ];
 const DEFAULTS = {
   fit: "cover" as const,
   focusY: 50,
   rounded: 16,
-  transition: { type: "tween", stiffness: 800, damping: 60, mass: 1, duration: 0.6, ease: "easeInOut" },
+  transition: {
+    type: "tween",
+    stiffness: 800,
+    damping: 60,
+    mass: 1,
+    duration: 0.6,
+    ease: "easeInOut",
+  } as Transition,
   tilt: true,
   tiltOptions: { effect: "repel" as const, tiltLimit: 15, scale: 103 },
 };
 const HALF_TURN = 180;
 const PERSPECTIVE = 900;
-const srcOf = (image: any): string => typeof image === "string" ? image : (image?.src ?? "");
+const srcOf = (image: unknown): string =>
+  typeof image === "string"
+    ? image
+    : ((image as { src?: string } | undefined)?.src ?? "");
 const focusOf = (item: ImageItem | undefined) => Math.min(100, Math.max(0, typeof item?.focusY === "number" ? item.focusY : DEFAULTS.focusY));
 const altOf = (item: ImageItem | undefined) => typeof item?.image === "object" && item.image ? item.image.alt ?? "Architectural inspiration" : "Architectural inspiration";
 

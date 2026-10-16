@@ -20,15 +20,17 @@ interface RoundCarouselProps {
   background?: string;
   style?: React.CSSProperties;
 }
+// Local, self-hosted inspiration imagery. Swap these for real SmartNest
+// project photography when available — keep the files in /public/images.
 const DEFAULT_IMAGES: RoundCarouselImage[] = [
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/e60dd7f7-a44f-40a7-df62-095b19cd8700/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/eec164e9-23f8-4f87-b48a-a208fa806100/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/859c75ea-953e-489e-be61-91a03a35d700/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/933a7615-f4b6-4eae-8ed1-705fa0e24400/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/7d4d2641-d6a8-4fef-e85c-b12ed100d500/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/ed7b1c40-3332-43d8-a9eb-4615ef341b00/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/31afae9c-5ba3-4ec3-2534-ed8198ed1100/w=800" },
-  { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/bd541261-75be-469c-7dc0-dae0ce81c400/w=800" },
+  { src: "/images/scene-villa-dusk.jpg" },
+  { src: "/images/scene-living-ambient.jpg" },
+  { src: "/images/scene-bedroom.jpg" },
+  { src: "/images/scene-kitchen.jpg" },
+  { src: "/images/scene-cinema.jpg" },
+  { src: "/images/scene-study.jpg" },
+  { src: "/images/scene-terrace.jpg" },
+  { src: "/images/scene-foyer.jpg" },
 ];
 export default function RoundCarousel({ images = DEFAULT_IMAGES, imageWidth = 300, imageHeight = 300, spacing = 3, speed = 7, direction = "right", drag = true, sensitivity = 5, tilt = -7, perspective = 3000, cornerRadius = 22, innerDim = 3.5, background = "transparent", style = {} }: RoundCarouselProps) {
   const items = images.length > 0 ? images : DEFAULT_IMAGES;

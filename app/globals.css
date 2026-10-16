@@ -1,5 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
+/* Fonts are self-hosted via next/font in app/layout.tsx — see the
+   --font-dm-sans / --font-manrope variables set on <html>. */
 
 :root {
   --bg: #090b0e;
@@ -10,8 +11,8 @@
   --green: #1687ff;
   --blue: #4800ff;
   --line: rgba(255,255,255,.11);
-  --font-body: "DM Sans", sans-serif;
-  --font-heading: "Manrope", sans-serif;
+  --font-body: var(--font-dm-sans), "DM Sans", sans-serif;
+  --font-heading: var(--font-manrope), "Manrope", sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 85px; }
@@ -36,7 +37,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .nav-cta { display: inline-flex; align-items: center; gap: 9px; padding: 12px 17px; border: 1px solid #1687ff69; border-radius: 3px; color: var(--green); }
 .menu-button { display: none; color: white; border: 0; background: transparent; }
 .hero { min-height: 730px; height: min(850px, 100svh); position: relative; display: flex; align-items: center; overflow: hidden; background: #0b1012; }
-.hero-image { position: absolute; inset: 0; background-image: url("https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=90"); background-size: cover; background-position: center 55%; transform: scale(1.015); animation: heroReveal 1.4s ease-out both; }
+.hero-image { position: absolute; inset: 0; background-image: url("/images/scene-villa-dusk.jpg"); background-size: cover; background-position: center 55%; transform: scale(1.015); animation: heroReveal 1.4s ease-out both; }
+
+/* ── Hero entrance ────────────────────────────────────────────────
+   Pure CSS so the headline and copy are ALWAYS visible, even if the
+   JavaScript bundle is slow, blocked, or fails to load. Previously
+   these used `motion` with initial opacity:0, which meant a JS failure
+   left the hero completely blank (bad for users and for SEO).
+   `animation-fill-mode: both` keeps the start state during the delay. */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(var(--rise, 20px)); }
+  to   { opacity: 1; transform: none; }
+}
+.hero-rise { animation: heroFadeUp .8s cubic-bezier(.22,.61,.36,1) both; }
+.hero-rise-1 { --rise: 18px; animation-delay: .05s; }
+.hero-rise-2 { --rise: 24px; animation-delay: .12s; }
+.hero-rise-3 { --rise: 20px; animation-delay: .22s; }
+.hero-rise-4 { --rise: 14px; animation-delay: .34s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise, .hero-image { animation: none; }
+}
 .hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,8,9,.94) 0%, rgba(5,8,9,.78) 35%, rgba(5,8,9,.23) 75%, rgba(5,8,9,.25) 100%), linear-gradient(0deg, #090b0e 0%, transparent 20%, transparent 75%, rgba(0,0,0,.28)); }
 @keyframes heroReveal { from { transform: scale(1.08); opacity: .65; } to { transform: scale(1.015); opacity: 1; } }
 .hero-content { width: 100%; max-width: 700px; position: relative; z-index: 2; margin-left: 10%; padding-top: 50px; }
@@ -598,8 +618,8 @@ html { scroll-behavior: smooth; }
   --green: #1687ff;
   --blue: #1687ff;
   --line: rgba(160, 190, 255, 0.14);
-  --font-body: "DM Sans", sans-serif;
-  --font-heading: "Manrope", sans-serif;
+  --font-body: var(--font-dm-sans), "DM Sans", sans-serif;
+  --font-heading: var(--font-manrope), "Manrope", sans-serif;
 }
 
 html {

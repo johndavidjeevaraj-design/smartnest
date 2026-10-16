@@ -7,8 +7,6 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import ImageFlip from "../components/ImageFlip";
 import RoundCarousel from "../components/RoundCarousel";
-import RotatingText from "../components/RotatingText";
-import InteractiveKNXDemo from "./components/InteractiveKNXDemo";
 
 
 import {
@@ -263,71 +261,35 @@ export default function Home() {
 
         <div className="hero-content">
 
-          <motion.div
-
-            initial={{ opacity: 0, y: 18 }}
-
-            animate={{ opacity: 1, y: 0 }}
-
-            transition={{ duration: 0.7 }}
-
-            className="eyebrow"
-
-          >
+          <div className="eyebrow hero-rise hero-rise-1">
 
             <span className="status-dot" /> THE FUTURE OF HOME, TODAY
 
-          </motion.div>
+          </div>
 
-          <motion.h1
-
-            initial={{ opacity: 0, y: 24 }}
-
-            animate={{ opacity: 1, y: 0 }}
-
-            transition={{ duration: 0.85, delay: 0.1 }}
-
-          >
+          <h1 className="hero-rise hero-rise-2">
 
             Your home.<br />
 
             <span>Your intelligence.</span>
 
-          </motion.h1>
+          </h1>
 
-          <motion.p
-
-            initial={{ opacity: 0, y: 20 }}
-
-            animate={{ opacity: 1, y: 0 }}
-
-            transition={{ duration: 0.8, delay: 0.2 }}
-
-          >
+          <p className="hero-rise hero-rise-3">
 
             Thoughtfully engineered KNX automation that brings lighting,
 
             comfort, security and design together in perfect harmony.
 
-          </motion.p>
+          </p>
 
-          <motion.div
-
-            className="hero-actions"
-
-            initial={{ opacity: 0, y: 14 }}
-
-            animate={{ opacity: 1, y: 0 }}
-
-            transition={{ delay: 0.35 }}
-
-          >
+          <div className="hero-actions hero-rise hero-rise-4">
 
             <a className="button button-primary" href="#contact">Build your smart home <ArrowRight size={17} /></a>
 
             <a className="button button-ghost" href="#experience"><span className="play-icon">↗</span> Explore the experience</a>
 
-          </motion.div>
+          </div>
 
           <div className="hero-footnote">
 
@@ -502,10 +464,10 @@ export default function Home() {
     "--demo-brightness": `${lightsOn ? brightness : 0}%`,
     backgroundImage: `url("${
       selectedRoom === "Bedroom"
-        ? "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1800&q=85"
+        ? "/images/scene-bedroom.jpg"
         : selectedRoom === "Kitchen"
-          ? "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=85"
-          : "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=85"
+          ? "/images/scene-kitchen.jpg"
+          : "/images/scene-living-ambient.jpg"
     }")`,
     backgroundSize: "cover",
     backgroundPosition: "center",
@@ -629,10 +591,10 @@ export default function Home() {
             <div className="gallery-flip-frame">
               <ImageFlip
                 images={[
-                  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/12e8b0be-f114-4134-1ab7-53116bfc2800/w=800", alt: "Contemporary villa exterior" }, focusY: 50 },
-                  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/08f4d1ae-43ca-4879-80f4-c1e7969eef00/w=800", alt: "Luxury interior" }, focusY: 50 },
-                  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/75367195-8fa6-4ff1-d0ce-68df4694a700/w=800", alt: "Architectural living space" }, focusY: 50 },
-                  { image: { src: "https://imagedelivery.net/IEUjvl3YUlxY-MrTpOAWDQ/f0b7559d-35e2-4feb-ae16-7ca802b21f00/w=800", alt: "Modern home design" }, focusY: 50 },
+                  { image: { src: "/images/scene-villa-dusk.jpg", alt: "Modern SmartNest villa exterior at dusk" }, focusY: 50 },
+                  { image: { src: "/images/scene-living-ambient.jpg", alt: "Living room with layered ambient lighting" }, focusY: 50 },
+                  { image: { src: "/images/scene-foyer.jpg", alt: "Entrance foyer with concealed step lighting" }, focusY: 50 },
+                  { image: { src: "/images/scene-terrace.jpg", alt: "Villa terrace and pool lighting at dusk" }, focusY: 50 },
                 ]}
                 fit="cover"
                 rounded={18}
