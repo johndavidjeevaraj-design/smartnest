@@ -23,10 +23,10 @@ interface ImageFlipProps {
 }
 
 const DEFAULT_ITEMS: ImageItem[] = [
-  { image: { src: "/images/scene-villa-dusk.jpg", alt: "Modern villa exterior at dusk" }, focusY: 50 },
-  { image: { src: "/images/scene-living-ambient.jpg", alt: "Living room ambient lighting" }, focusY: 50 },
-  { image: { src: "/images/scene-foyer.jpg", alt: "Entrance foyer lighting" }, focusY: 50 },
-  { image: { src: "/images/scene-terrace.jpg", alt: "Terrace and pool at dusk" }, focusY: 50 },
+  { image: { src: "/images/src/int-living.jpg", alt: "Living room with daylight and low ambient lighting" }, focusY: 50 },
+  { image: { src: "/images/src/int-bedroom.jpg", alt: "Bedroom at night with warm low-level lighting" }, focusY: 50 },
+  { image: { src: "/images/src/villa-infinity-dusk.jpg", alt: "Villa infinity pool at dusk with landscape lighting" }, focusY: 50 },
+  { image: { src: "/images/src/int-kitchen.jpg", alt: "Kitchen with task and under-cabinet lighting" }, focusY: 50 },
 ];
 const DEFAULTS = {
   fit: "cover" as const,

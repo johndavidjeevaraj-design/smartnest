@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useEffect, useRef } from "react";
 
-interface RoundCarouselImage { src: string; }
+interface RoundCarouselImage { src: string; alt?: string; }
 interface RoundCarouselProps {
   images?: RoundCarouselImage[];
   imageWidth?: number;
@@ -23,14 +23,14 @@ interface RoundCarouselProps {
 // Local, self-hosted inspiration imagery. Swap these for real SmartNest
 // project photography when available — keep the files in /public/images.
 const DEFAULT_IMAGES: RoundCarouselImage[] = [
-  { src: "/images/scene-villa-dusk.jpg" },
-  { src: "/images/scene-living-ambient.jpg" },
-  { src: "/images/scene-bedroom.jpg" },
-  { src: "/images/scene-kitchen.jpg" },
-  { src: "/images/scene-cinema.jpg" },
-  { src: "/images/scene-study.jpg" },
-  { src: "/images/scene-terrace.jpg" },
-  { src: "/images/scene-foyer.jpg" },
+  { src: "/images/src/villa-windows-night.jpg", alt: "Modern villa exterior at night with lit windows" },
+  { src: "/images/src/int-living.jpg", alt: "Living room with layered daylight and low ambient lighting" },
+  { src: "/images/src/villa-poolside-night.jpg", alt: "Villa poolside at night with warm architectural lighting" },
+  { src: "/images/src/int-dayroom.jpg", alt: "Bright living room with high ceilings and natural light" },
+  { src: "/images/src/villa-infinity-dusk.jpg", alt: "Stone villa and infinity pool at dusk" },
+  { src: "/images/src/int-kitchen.jpg", alt: "Open-plan kitchen with glazing open to the garden" },
+  { src: "/images/src/villa-pool-terrace.jpg", alt: "Pool terrace at dusk with lit loungers and palms" },
+  { src: "/images/src/villa-lawn-night.jpg", alt: "Villa lawn and grounds lit at night" },
 ];
 export default function RoundCarousel({ images = DEFAULT_IMAGES, imageWidth = 300, imageHeight = 300, spacing = 3, speed = 7, direction = "right", drag = true, sensitivity = 5, tilt = -7, perspective = 3000, cornerRadius = 22, innerDim = 3.5, background = "transparent", style = {} }: RoundCarouselProps) {
   const items = images.length > 0 ? images : DEFAULT_IMAGES;

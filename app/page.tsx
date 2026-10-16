@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import "./home.css";
 import ImageFlip from "@/components/ImageFlip";
+import SiteNav from "@/components/SiteNav";
 import RoundCarousel from "@/components/RoundCarousel";
 import KnxDemo from "@/components/KnxDemo";
 import ContactForm from "@/components/ContactForm";
@@ -141,6 +142,39 @@ const SERVICES = [
   },
 ];
 
+const HARDWARE = [
+  {
+    src: "/images/src/tech-access-control.jpg",
+    alt: "Close-up of a wall-mounted access control keypad in a dark finish",
+    title: "Access control",
+    body: "Keypad and RFID entry, programmed per door.",
+  },
+  {
+    src: "/images/src/tech-camera-indoor.jpg",
+    alt: "White indoor security camera on a light surface",
+    title: "Indoor cameras",
+    body: "Interior coverage that arms when you leave.",
+  },
+  {
+    src: "/images/src/tech-smartphone-hub.jpg",
+    alt: "Smart home hub and cameras arranged on a dark surface",
+    title: "Bus gateways",
+    body: "The bridge between the KNX bus and your phone.",
+  },
+  {
+    src: "/images/src/tech-home-automation.jpg",
+    alt: "Hand holding a phone beside smart home devices on a pale surface",
+    title: "App & voice control",
+    body: "Alexa, Google and Siri, over one bus.",
+  },
+  {
+    src: "/images/src/tech-gadgets.jpg",
+    alt: "White smart home devices and a smartphone laid out on a pale surface",
+    title: "Sensors & keypads",
+    body: "Presence, lux and climate sensing wall to wall.",
+  },
+];
+
 const STATS = [
   { value: "30+", label: "KNX projects completed" },
   { value: "100+", label: "Happy clients" },
@@ -161,7 +195,7 @@ const WHY = [
   },
   {
     icon: Zap,
-    title: "Up to 30% energy savings",
+    title: "Energy savings of up to 30%",
     body: "Sensors, timed scenes and daylight-aware dimming cut consumption measurably — lighting and climate stop running in empty rooms.",
   },
   {
@@ -251,30 +285,7 @@ export default function ApplePage() {
   return (
     <div className="ap-root">
       {/* ── Nav ─────────────────────────────────────────────────────── */}
-      <header className="ap-nav">
-        <div className="ap-nav-inner">
-          <a href="#top" className="ap-logo">
-            <span className="ap-logo-mark" aria-hidden>
-              <span />
-              <span />
-              <span />
-            </span>
-            SmartNest
-          </a>
-
-          <nav className="ap-nav-links" aria-label="Main">
-            {NAV.map((n) => (
-              <a key={n.href} href={n.href}>
-                {n.label}
-              </a>
-            ))}
-          </nav>
-
-          <a className="ap-nav-cta" href="#contact">
-            Get a quote
-          </a>
-        </div>
-      </header>
+      <SiteNav links={NAV} />
 
       <main id="top">
         {/* ── Hero ──────────────────────────────────────────────────── */}
@@ -287,7 +298,7 @@ export default function ApplePage() {
             <h1 className="ap-h1 ap-rise ap-rise-2">
               Smart living.
               <br />
-              Simplified.
+              <span className="ap-grad">Simplified.</span>
             </h1>
 
             <p className="ap-lead ap-hero-lead ap-rise ap-rise-3">
@@ -309,7 +320,7 @@ export default function ApplePage() {
                 <BadgeCheck /> ISO/IEC 14543 certified
               </span>
               <span className="ap-badge">
-                <Zap /> Up to 30% energy savings
+                <Zap /> Energy savings of up to 30%
               </span>
               <span className="ap-badge">
                 <ShieldCheck /> KNX Secure protocol
@@ -321,8 +332,8 @@ export default function ApplePage() {
             <div className="ap-hero-media ap-rise ap-rise-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/scene-villa-dusk.jpg"
-                alt="Modern luxury villa at dusk with warm interior lighting and landscaped garden lighting, installed by SmartNest"
+                src="/images/src/villa-terrace-dusk.jpg"
+                alt="Modern villa at dusk with a lit infinity pool and warm interior lighting behind full-height glazing"
                 width={1536}
                 height={1024}
               />
@@ -367,7 +378,7 @@ export default function ApplePage() {
               <h2 className="ap-h2">
                 Everything your home needs.
                 <br />
-                Under one roof.
+                <span className="ap-grad">Under one roof.</span>
               </h2>
               <p className="ap-lead" style={{ marginTop: 22 }}>
                 From a single wireless switch to a fully wired KNX villa — we design,
@@ -413,7 +424,7 @@ export default function ApplePage() {
             <div className="ap-center">
               <span className="ap-eyebrow">Live interactive demonstration</span>
               <h2 className="ap-h2">
-                See how KNX actually behaves.
+                See how <span className="ap-grad">KNX actually behaves.</span>
               </h2>
               <p className="ap-lead" style={{ marginTop: 22 }}>
                 Tap a room to switch its lighting, or choose a scene and watch every
@@ -422,6 +433,28 @@ export default function ApplePage() {
             </div>
 
             <KnxDemo />
+
+            <div className="ap-hardware">
+              <p className="ap-hardware-note">
+                The demo above is a simulation. Below is the actual class of hardware
+                we install — DIN-rail actuators and gateways in the distribution board,
+                certified KNX touch switches on the wall, and keypads, readers and
+                cameras from the 500+ brands the standard supports.
+              </p>
+
+              <ul className="ap-hardware-rail">
+                {HARDWARE.map((h) => (
+                  <li key={h.title} className="ap-hardware-item">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={h.src} alt={h.alt} width={900} height={600} loading="lazy" />
+                    <div className="ap-hardware-caption">
+                      <span className="ap-hardware-title">{h.title}</span>
+                      <span className="ap-hardware-body">{h.body}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
@@ -434,7 +467,7 @@ export default function ApplePage() {
                 <h2 className="ap-h2">
                   The difference is
                   <br />
-                  the wiring.
+                  <span className="ap-grad">the wiring.</span>
                 </h2>
                 <p className="ap-body" style={{ marginTop: 20 }}>
                   Most &ldquo;smart homes&rdquo; are a collection of WiFi gadgets from
@@ -463,8 +496,8 @@ export default function ApplePage() {
               <div className="ap-split-media">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/scene-living-ambient.jpg"
-                  alt="Living room at night with layered warm lighting and automated curtains, controlled over KNX"
+                  src="/images/src/villa-pool-night.jpg"
+                  alt="Villa at night with its facade fully lit and reflected in the pool, running on the home's own KNX wiring"
                   width={1536}
                   height={1024}
                 />
@@ -491,7 +524,7 @@ export default function ApplePage() {
               <h2 className="ap-h2">
                 Designed around
                 <br />
-                the way you live.
+                <span className="ap-grad">the way you live.</span>
               </h2>
               <p className="ap-lead" style={{ marginTop: 22 }}>
                 Every one of these is a scene your home shifts into with a single tap —
@@ -502,42 +535,44 @@ export default function ApplePage() {
 
             <div className="ap-spaces">
               <div className="ap-spaces-flip">
-                <ImageFlip
+                <div className="ap-flip-stage">
+                  <ImageFlip
                   images={[
                     {
                       image: {
-                        src: "/images/scene-living-ambient.jpg",
-                        alt: "Living room in warm evening light with layered cove and sconce lighting",
+                        src: "/images/src/int-kitchen.jpg",
+                        alt: "Morning scene: open-plan kitchen and living space with glazing slid back to the garden",
                       },
                       focusY: 50,
                     },
                     {
                       image: {
-                        src: "/images/scene-cinema.jpg",
-                        alt: "Home cinema set to movie mode with low ambient lighting",
+                        src: "/images/src/int-living.jpg",
+                        alt: "Daylight scene: living room with layered natural light and lighting held low",
                       },
                       focusY: 50,
                     },
                     {
                       image: {
-                        src: "/images/scene-foyer.jpg",
-                        alt: "Entrance foyer with concealed step lighting switched on",
+                        src: "/images/src/villa-green-evening.jpg",
+                        alt: "Garden at dusk scene: pool terrace and pergola lighting fading up on schedule",
                       },
                       focusY: 50,
                     },
                     {
                       image: {
-                        src: "/images/scene-terrace.jpg",
-                        alt: "Villa terrace and pool lighting at dusk",
+                        src: "/images/src/villa-lights-on.jpg",
+                        alt: "Goodnight scene: house at night with interior lighting down to circulation level only",
                       },
                       focusY: 50,
                     },
                   ]}
-                  fit="cover"
-                  rounded={18}
-                  tilt
-                  tiltOptions={{ effect: "repel", tiltLimit: 8, scale: 103 }}
-                />
+                    fit="cover"
+                    rounded={18}
+                    tilt
+                    tiltOptions={{ effect: "repel", tiltLimit: 8, scale: 103 }}
+                  />
+                </div>
                 <p className="ap-spaces-hint">
                   Click either side of the card to flip through scenes
                 </p>
@@ -570,15 +605,28 @@ export default function ApplePage() {
               <h2 className="ap-h2">Four steps, no surprises.</h2>
             </div>
 
-            <ol className="ap-steps">
-              {PROCESS.map((p) => (
-                <li key={p.n} className="ap-step">
-                  <span className="ap-step-num">{p.n}</span>
-                  <h4 className="ap-h4">{p.title}</h4>
-                  <p>{p.body}</p>
-                </li>
-              ))}
-            </ol>
+            <div className="ap-process">
+              <ol className="ap-steps">
+                {PROCESS.map((p) => (
+                  <li key={p.n} className="ap-step">
+                    <span className="ap-step-num">{p.n}</span>
+                    <h4 className="ap-h4">{p.title}</h4>
+                    <p>{p.body}</p>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="ap-process-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/src/villa-concrete.jpg"
+                  alt="Detail of a stone entrance colonnade and staircase above a reflecting pool"
+                  width={1200}
+                  height={1600}
+                  loading="lazy"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -627,7 +675,7 @@ export default function ApplePage() {
                 <h2 className="ap-h2">
                   Tell us about
                   <br />
-                  your home.
+                  <span className="ap-grad">your home.</span>
                 </h2>
                 <p className="ap-body" style={{ marginTop: 20, maxWidth: 460 }}>
                   No obligation, no pressure. We&apos;ll come back within one working
