@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import ImageFlip from "../components/ImageFlip";
 import RoundCarousel from "../components/RoundCarousel";
 
@@ -984,6 +985,8 @@ export default function Home() {
           <a href="#faq">FAQ</a>
 
           <a href="#contact">Contact</a>
+
+          <Link href="/apple">Apple-style version ↗</Link>
 
         </nav>
 
