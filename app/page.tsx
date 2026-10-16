@@ -732,6 +732,108 @@ export default function Home() {
 
 
 
+      {/* ── How a project works ─────────────────────────────────────
+          The single biggest question a custom-installation customer
+          has is "what actually happens if I get in touch?" — the site
+          previously never answered it. */}
+      <section className="nx-process" id="process" aria-labelledby="nx-process-title">
+
+        <div className="nx-process-head">
+
+          <span className="nx-kicker">HOW IT WORKS</span>
+
+          <h2 id="nx-process-title">From first conversation<br /><span>to first scene.</span></h2>
+
+          <p>Every SmartNest project follows the same four steps — whether it&apos;s a single apartment or a full villa.</p>
+
+        </div>
+
+        <ol className="nx-steps">
+
+          <li>
+            <span className="nx-step-num">01</span>
+            <h3>Conversation</h3>
+            <p>Tell us about your home and how you actually live in it. We&apos;ll be straight with you about what&apos;s worth automating and what isn&apos;t — no cost, no obligation.</p>
+          </li>
+
+          <li>
+            <span className="nx-step-num">02</span>
+            <h3>Design &amp; proposal</h3>
+            <p>We map every circuit, sensor and scene, coordinate with your architect or electrician, then give you a written scope with a fixed price.</p>
+          </li>
+
+          <li>
+            <span className="nx-step-num">03</span>
+            <h3>Installation &amp; programming</h3>
+            <p>Our team handles wiring, commissioning and programming, and works around your schedule if the home is already occupied.</p>
+          </li>
+
+          <li>
+            <span className="nx-step-num">04</span>
+            <h3>Handover &amp; support</h3>
+            <p>We walk you through your system in person, leave you with clear documentation, and stay reachable long after the final invoice.</p>
+          </li>
+
+        </ol>
+
+      </section>
+
+
+
+      {/* ── FAQ ─────────────────────────────────────────────────────
+          Native <details>/<summary> — the accordion works with zero
+          JavaScript, and collapses correctly for search engines and
+          screen readers. */}
+      <section className="nx-faq" id="faq" aria-labelledby="nx-faq-title">
+
+        <div className="nx-faq-head">
+
+          <span className="nx-kicker">COMMON QUESTIONS</span>
+
+          <h2 id="nx-faq-title">Things people<br /><span>ask us first.</span></h2>
+
+          <p>If your question isn&apos;t here, message us on WhatsApp — we usually reply the same day.</p>
+
+        </div>
+
+        <div className="nx-faq-list">
+
+          <details>
+            <summary>What exactly is KNX?</summary>
+            <p>KNX is an international open standard for building control, used in everything from homes to airports. Unlike app-based WiFi gadgets, KNX devices talk to each other over their own dedicated wiring — so you&apos;re not locked into one brand&apos;s app, and the system keeps working when the internet doesn&apos;t.</p>
+          </details>
+
+          <details>
+            <summary>Will my lights still work if the internet goes down?</summary>
+            <p>Yes — and this is one of the main reasons people choose KNX over WiFi-based systems. Your switches, dimming and scenes are wired and run locally, so the house carries on as normal. Internet access is only needed for controlling things remotely from your phone.</p>
+          </details>
+
+          <details>
+            <summary>Can this be installed in my existing home, or is it only for new builds?</summary>
+            <p>Both. A new build or major renovation is the cleanest moment, because wiring can be planned into the structure. But retrofits are common too — we can often work through existing conduit, and we can do it room by room if you&apos;d rather not take on the whole house at once.</p>
+          </details>
+
+          <details>
+            <summary>How much does a system cost?</summary>
+            <p>It depends on the size of the home and how many functions you want, so there&apos;s no honest single number — anyone quoting one without seeing your home is guessing. Together we agree what matters most, and you get a written scope with a fixed price before any work begins.</p>
+          </details>
+
+          <details>
+            <summary>How long does installation take?</summary>
+            <p>For a new home we work alongside the construction schedule, so the automation is complete as the house is. For retrofits we&apos;ll give you a realistic, room-by-room timeline in the proposal — and we don&apos;t start until you&apos;re comfortable with it.</p>
+          </details>
+
+          <details>
+            <summary>What happens after installation if something goes wrong?</summary>
+            <p>You get our direct contact details, not a call centre, and we stand behind the system we installed. Because KNX is an open standard supported by multiple manufacturers, replacement parts stay available for the long term — you&apos;re never dependent on one supplier.</p>
+          </details>
+
+        </div>
+
+      </section>
+
+
+
       <section className="quote-section">
 
         <span className="quote-mark">“</span>
@@ -866,6 +968,24 @@ export default function Home() {
           <a className="footer-top-link" href="#home">BACK TO TOP <ArrowUpRight size={15} /></a>
 
         </div>
+
+        <nav className="nx-footer-nav" aria-label="Footer">
+
+          <a href="#solutions">Solutions</a>
+
+          <a href="#experience">Experience</a>
+
+          <a href="#spaces">Spaces</a>
+
+          <a href="#technology">Technology</a>
+
+          <a href="#process">Process</a>
+
+          <a href="#faq">FAQ</a>
+
+          <a href="#contact">Contact</a>
+
+        </nav>
 
         <div className="footer-bottom"><span>© 2026 SmartNest. All rights reserved.</span><span>DESIGNED FOR BETTER LIVING <span className="footer-dot">●</span></span></div>
 

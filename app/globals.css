@@ -2319,3 +2319,218 @@ input[type="range"] {
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PROCESS + FAQ
+   Same flat, self-contained approach as .nx-showcase above: own `nx-`
+   namespace, no !important, no `html body` escalation. These do not
+   touch any existing selector.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.nx-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  color: var(--accent);
+}
+
+.nx-kicker::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 13px rgba(22, 135, 255, 0.5);
+}
+
+/* ── Process — light section, matching the white solutions/technology bands ── */
+.nx-process {
+  padding: 110px 10%;
+  background: #ffffff;
+  color: #111827;
+}
+
+.nx-process-head,
+.nx-faq-head {
+  max-width: 720px;
+}
+
+.nx-process-head h2,
+.nx-faq-head h2 {
+  margin: 20px 0 18px;
+  font: 500 clamp(32px, 4.6vw, 58px) / 1.1 var(--font-heading);
+  letter-spacing: -2.6px;
+}
+
+.nx-process-head h2 span {
+  color: var(--accent);
+}
+
+.nx-process-head > p,
+.nx-faq-head > p {
+  max-width: 620px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.nx-process-head > p { color: #4b5563; }
+
+.nx-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 34px;
+  margin: 66px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-step-num {
+  display: block;
+  margin-bottom: 20px;
+  font: 800 13px var(--font-heading);
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.nx-steps li {
+  position: relative;
+  padding-top: 24px;
+  border-top: 1px solid rgba(17, 24, 39, 0.14);
+}
+
+/* Accent rule on the first step only, so the sequence reads left-to-right */
+.nx-steps li:first-child {
+  border-top-color: var(--accent);
+}
+
+.nx-steps h3 {
+  margin: 0 0 10px;
+  font: 700 16px var(--font-heading);
+  letter-spacing: -0.4px;
+  color: #111827;
+}
+
+.nx-steps p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.72;
+  color: #56606f;
+}
+
+/* ── FAQ — dark section ── */
+.nx-faq {
+  padding: 110px 10%;
+  background: radial-gradient(ellipse at 80% 0%, #0e2340 0%, transparent 50%), #080b12;
+  color: #f2f6ff;
+}
+
+.nx-faq-head h2 span {
+  background: linear-gradient(105deg, var(--accent) 0%, #64b5ff 48%, #f2f6ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #58adff;
+}
+
+.nx-faq-head > p { color: #9aa8bf; }
+
+.nx-faq-list {
+  max-width: 880px;
+  margin-top: 56px;
+}
+
+.nx-faq-list details {
+  border-bottom: 1px solid rgba(160, 190, 255, 0.14);
+}
+
+.nx-faq-list summary {
+  position: relative;
+  padding: 26px 52px 26px 0;
+  font: 600 16px var(--font-heading);
+  letter-spacing: -0.3px;
+  color: #f2f6ff;
+  cursor: pointer;
+  list-style: none;
+  transition: color 0.2s;
+}
+
+.nx-faq-list summary::-webkit-details-marker { display: none; }
+
+.nx-faq-list summary:hover { color: var(--accent); }
+
+/* +/− indicator, drawn with borders so it needs no icon font */
+.nx-faq-list summary::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin-top: -5px;
+  border-right: 1.5px solid var(--accent);
+  border-bottom: 1.5px solid var(--accent);
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+}
+
+.nx-faq-list details[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.nx-faq-list details[open] summary { color: var(--accent); }
+
+.nx-faq-list details p {
+  max-width: 760px;
+  margin: 0;
+  padding: 0 52px 28px 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #a8b6cc;
+}
+
+@media (max-width: 900px) {
+  .nx-process,
+  .nx-faq { padding: 80px 7%; }
+  .nx-steps { grid-template-columns: repeat(2, 1fr); gap: 28px; margin-top: 48px; }
+}
+
+@media (max-width: 560px) {
+  .nx-steps { grid-template-columns: 1fr; }
+  .nx-process-head h2,
+  .nx-faq-head h2 { letter-spacing: -1.6px; }
+  .nx-faq-list summary { padding-right: 40px; font-size: 15px; }
+  .nx-faq-list details p { padding-right: 0; }
+}
+
+/* ── Footer quick links ──────────────────────────────────────────────
+   The footer previously had no navigation at all — the only way to
+   reach a section was to scroll back to the top. The main nav could
+   not take two more items (it is already tight between 761–1050px),
+   so Process and FAQ are discoverable from here instead. */
+.nx-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 30px;
+  margin: 38px 0 34px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(160, 190, 255, 0.12);
+}
+
+.nx-footer-nav a {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  color: #9aa8bf;
+  transition: color 0.2s;
+}
+
+.nx-footer-nav a:hover { color: var(--accent); }
+
+@media (max-width: 560px) {
+  .nx-footer-nav { gap: 10px 22px; }
+  .nx-footer-nav a { font-size: 11.5px; }
+}
