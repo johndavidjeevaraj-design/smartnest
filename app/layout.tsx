@@ -1,26 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Manrope } from "next/font/google";
 import "./globals.css";
-
-/**
- * Fonts are self-hosted at build time by next/font — no request to
- * fonts.googleapis.com at runtime. This removes a render-blocking
- * stylesheet, eliminates the flash of unstyled text, and means the
- * site renders identically even if Google Fonts is slow or blocked.
- */
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-manrope",
-  display: "swap",
-});
 
 // REPLACE with your real domain once the site is live, e.g.
 // metadataBase: new URL("https://smartnest.in")
@@ -50,12 +29,21 @@ export const metadata: Metadata = {
     description:
       "Premium KNX smart home automation — lighting, climate, curtains and security, thoughtfully integrated.",
     locale: "en_IN",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "SmartNest — intelligent KNX smart home automation",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "SmartNest | Intelligent Living, Beautifully Connected",
     description:
       "Premium KNX smart home automation — lighting, climate, curtains and security, thoughtfully integrated.",
+    images: ["/og-image.jpg"],
   },
   robots: { index: true, follow: true },
 };
@@ -66,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${manrope.variable}`}>
+    <html lang="en">
       <body>
         {/* Safety net: `motion` renders entrance animations with an inline
             opacity:0 start state. If JavaScript never runs, those blocks would
