@@ -5,6 +5,7 @@
 import { useState } from "react";
 
 import { motion } from "motion/react";
+import Image from "next/image";
 import ImageFlip from "../components/ImageFlip";
 import RoundCarousel from "../components/RoundCarousel";
 
@@ -682,6 +683,50 @@ export default function Home() {
           <a href="#contact" className="text-link">Explore a SmartNest project <ArrowRight size={17} /></a>
 
         </div>
+
+      </section>
+
+
+
+      {/* ── Villa cutaway showcase ──────────────────────────────────
+          Deliberately its own section with its own class namespace.
+          It is NOT added to .technology-section, which carries a deep
+          specificity war (18 competing rule sets). */}
+      <section className="nx-showcase" aria-labelledby="nx-showcase-title">
+
+        <figure className="nx-showcase-frame">
+
+          <Image
+
+            src="/images/smartnest-villa.jpg"
+
+            alt="Cutaway view of a modern villa showing lighting controlled independently in each room, with the ground floor, upper floor and landscaped garden all visibly lit"
+
+            width={1600}
+
+            height={1067}
+
+            sizes="(max-width: 768px) 100vw, 1200px"
+
+            className="nx-showcase-image"
+
+          />
+
+          <div className="nx-showcase-scrim" aria-hidden="true" />
+
+          <figcaption className="nx-showcase-caption">
+
+            <span className="nx-showcase-kicker">ONE HOME, FULLY CONNECTED</span>
+
+            <h2 id="nx-showcase-title">Every room.<br /><span>One system.</span></h2>
+
+            <p>Lighting, climate, shading and security across an entire property — coordinated from a single layer of control that never asks you to think about it.</p>
+
+            <span className="nx-showcase-note">Illustrative visual prepared for SmartNest — not a photograph of a completed project.</span>
+
+          </figcaption>
+
+        </figure>
 
       </section>
 
