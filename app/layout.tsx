@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "./fonts.css";
 
 // REPLACE with your real domain once the site is live, e.g.
 // metadataBase: new URL("https://smartnest.in")

@@ -1,637 +1,558 @@
-"use client";
-
-
-
-import { useState } from "react";
-
-import { motion } from "motion/react";
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
-import ImageFlip from "../components/ImageFlip";
-import RoundCarousel from "../components/RoundCarousel";
-
-
 import {
-
-  ArrowDownRight,
-
   ArrowRight,
-
-  ArrowUpRight,
-
+  BadgeCheck,
+  Bell,
+  Camera,
+  Car,
   Check,
-
-
-
+  Droplets,
   Fingerprint,
-
+  Globe,
   Lightbulb,
-
-  Menu,
-
-  Moon,
-
-  Music2,
-
+  Lock,
+  Mail,
+  MapPin,
   MessageCircle,
-
+  Phone,
   ShieldCheck,
-
-  Smartphone,
-
-  Sparkles,
-
   Thermometer,
-
-  VenetianMask,
-
+  Waves,
   Wifi,
-
-  X,
-
   Zap,
-
 } from "lucide-react";
+import "./home.css";
+import ImageFlip from "@/components/ImageFlip";
+import RoundCarousel from "@/components/RoundCarousel";
+import KnxDemo from "@/components/KnxDemo";
+import ContactForm from "@/components/ContactForm";
 
-
-
-
-
-// SMARTNEST WHATSAPP ENQUIRIES
-
-// Replace this with your business WhatsApp number.
-
-// India example format: 91 followed by 10 digits.
-
-// Use digits only: no +, spaces, or hyphens.
-
-const WHATSAPP_NUMBER = "918072568386";
-
-
-
-const features = [
-
-  {
-
-    icon: Lightbulb,
-
-    title: "Intelligent lighting",
-
-    text: "Set the perfect atmosphere with precise dimming, scenes and effortless control.",
-
+export const metadata: Metadata = {
+  title: "SmartNest — Certified KNX Smart Home Automation in Hosur & Bengaluru",
+  description:
+    "Certified KNX smart home and villa automation in Hosur and Bengaluru. Lighting, climate, gates, security, CCTV, door locks and water control — designed, installed and programmed by SmartNest.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "SmartNest — Certified KNX Smart Home Automation",
+    description:
+      "Certified KNX automation for luxury homes and villas across Hosur and Bengaluru.",
+    url: "/",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
   },
+};
 
+const NAV = [
+  { label: "Services", href: "#services" },
+  { label: "KNX Demo", href: "#demo" },
+  { label: "Spaces", href: "#spaces" },
+  { label: "Why KNX", href: "#why" },
+  { label: "Process", href: "#process" },
+  { label: "Reviews", href: "#reviews" },
+  { label: "Contact", href: "#contact" },
+];
+
+const SERVICES = [
   {
-
-    icon: Thermometer,
-
-    title: "Climate that thinks",
-
-    text: "Make every room comfortable while reducing unnecessary energy consumption.",
-
+    icon: Globe,
+    title: "KNX Wired Automation",
+    desc: "The global open standard for building control. We design, install and program KNX systems end to end — the backbone that lets every other system in your home talk to one another.",
+    points: [
+      "ISO/IEC 14543 certified open standard",
+      "ETS software programming & commissioning",
+      "Works with 500+ ecosystem brands",
+      "Runs locally — no internet dependency",
+    ],
   },
-
   {
-
-    icon: VenetianMask,
-
-    title: "Curtains & blinds",
-
-    text: "Welcome the morning light, protect your privacy and follow the sun automatically.",
-
+    icon: Wifi,
+    title: "Wireless Home Automation",
+    desc: "Seamless smart home control without structural rewiring. Manage lights, fans, curtains, AC climate and RGB scenes from your phone or voice assistant.",
+    points: [
+      "Smart touch switches & retrofit wireless modules",
+      "Alexa, Google Assistant & Apple Siri integration",
+      "Mood lighting, dimming & RGB scene control",
+      "Smartphone remote access from anywhere",
+    ],
   },
-
   {
-
+    icon: Car,
+    title: "Gate Automation",
+    desc: "Heavy-duty motorised automation for sliding and swing gates, with the safety sensing a family driveway genuinely needs.",
+    points: [
+      "Motorised sliding & swing driveway openers",
+      "Infrared anti-crush obstacle sensors",
+      "Keyfob, RFID & mobile app opening",
+      "Boom barriers & visitor gate control",
+    ],
+  },
+  {
+    icon: Bell,
+    title: "Video Door Bell",
+    desc: "See and speak to whoever is at your door from anywhere — with a clear 2K image, day or night.",
+    points: [
+      "2K live HD video streaming",
+      "Real-time two-way audio talkback",
+      "Infrared night vision & motion alerts",
+      "Wireless indoor chime & mobile notifications",
+    ],
+  },
+  {
+    icon: Lock,
+    title: "Smart Door Lock",
+    desc: "Multi-layer biometric entry that removes the spare-key problem entirely, without ever locking you out.",
+    points: [
+      "3D semiconductor biometric fingerprint reader",
+      "Illuminated digital touchscreen keypad",
+      "Encrypted RFID card & manual emergency key",
+      "Wi-Fi remote unlock & one-time guest OTP",
+    ],
+  },
+  {
+    icon: Camera,
+    title: "Smart CCTV Automation",
+    desc: "Edge-AI cameras that tell the difference between a person, a vehicle and a swaying tree — so alerts stay meaningful.",
+    points: [
+      "Edge-AI human & vehicle classification",
+      "24/7 full-colour night vision",
+      "Active perimeter defence & siren alarms",
+      "Multi-screen NVR & encrypted cloud storage",
+    ],
+  },
+  {
     icon: ShieldCheck,
-
-    title: "Security & peace",
-
-    text: "Bring door access, sensors and security into one thoughtful experience.",
-
+    title: "Smart Alarm System",
+    desc: "Wireless intrusion detection across every door, window and room, with instant alerts wherever you are.",
+    points: [
+      "Wireless door & window contact sensors",
+      "Anti-pet PIR motion detectors",
+      "High-decibel indoor & outdoor strobe siren",
+      "Mobile push alerts & emergency SOS",
+    ],
   },
-
+  {
+    icon: Droplets,
+    title: "Automatic Water Control",
+    desc: "Stop climbing to the terrace to check the tank. Automated pumps with level sensing and dry-run protection.",
+    points: [
+      "Real-time overhead & sump level sensing",
+      "Automated pump auto-ON & auto-OFF",
+      "Dry-run & voltage surge motor protection",
+      "Mobile level monitoring & savings alerts",
+    ],
+  },
 ];
 
-
-
-const scenes = [
-
-  { id: "welcome", name: "Welcome", icon: Sparkles, light: 75, temp: 23 },
-
-  { id: "relax", name: "Relax", icon: Moon, light: 25, temp: 24 },
-
-  { id: "movie", name: "Movie night", icon: Music2, light: 8, temp: 22 },
-
+const STATS = [
+  { value: "30+", label: "KNX projects completed" },
+  { value: "100+", label: "Happy clients" },
+  { value: "5+", label: "Years of experience" },
+  { value: "24/7", label: "Technical support" },
 ];
 
+const WHY = [
+  {
+    icon: BadgeCheck,
+    title: "Certified, not self-taught",
+    body: "KNX is an ISO/IEC 14543 standard and we are certified to work with it. That certification is what separates a proper installation from a hobbyist one.",
+  },
+  {
+    icon: Globe,
+    title: "Open standard, no lock-in",
+    body: "Any certified manufacturer's device works on a KNX bus. You are never tied to one brand's app or one company's survival.",
+  },
+  {
+    icon: Zap,
+    title: "Up to 30% energy savings",
+    body: "Sensors, timed scenes and daylight-aware dimming cut consumption measurably — lighting and climate stop running in empty rooms.",
+  },
+  {
+    icon: Thermometer,
+    title: "Works when the internet doesn't",
+    body: "KNX runs on its own dedicated wiring. Your switches, dimming and scenes keep working in a power cut or broadband outage.",
+  },
+];
 
+const PROCESS = [
+  {
+    n: "01",
+    title: "Consultation",
+    body: "We visit, or talk it through remotely, and work out what is genuinely worth automating in your home — and what isn't.",
+  },
+  {
+    n: "02",
+    title: "Design & engineering",
+    body: "Circuit drawings, device schedules and ETS project planning, coordinated with your architect and electrician.",
+  },
+  {
+    n: "03",
+    title: "Installation & programming",
+    body: "Wiring, commissioning and ETS programming by our own technicians — we don't subcontract this part.",
+  },
+  {
+    n: "04",
+    title: "Handover & support",
+    body: "A walkthrough of your system, clear documentation, and 24/7 technical support after the invoice.",
+  },
+];
 
-export default function Home() {
+const REVIEWS = [
+  {
+    quote:
+      "Honestly, the best decision we made for our villa in Hosur. The automated entrance gate and night lighting scenes when we arrive home after dark are so convenient. Raghul and Tamilvanan explained everything patiently.",
+    name: "Soundarya Selvaraj",
+    place: "Hosur",
+  },
+  {
+    quote:
+      "We got KNX touch switches and AC climate integration for our duplex home in Indiranagar. The team configured the ETS programming perfectly. Super responsive local support whenever we need tweaks.",
+    name: "Shivakumar Swamy",
+    place: "Bengaluru",
+  },
+  {
+    quote:
+      "Water pump automation saved us so much hassle! No more climbing upstairs to check tank levels or worrying about overflow. SmartNest did a very clean installation at our HSR home.",
+    name: "Venkatesh Goud",
+    place: "Bengaluru",
+  },
+  {
+    quote:
+      "Installed smart locks, video door phone, and Edge-AI CCTV cameras. My family feels 100% secure whether we are at home or traveling outside Hosur. Highly recommend SmartNest!",
+    name: "Dr. Ananthakrishnan M.",
+    place: "Hosur",
+  },
+  {
+    quote:
+      "Our home cinema room and motorized curtain automation work like magic with voice commands. The smooth dimming transition during movie mode is top tier!",
+    name: "Divya Ramanathan",
+    place: "Bengaluru",
+  },
+  {
+    quote:
+      "Automated our 3-floor office space in Koramangala with energy sensors and attendance access controls. Cut our monthly electricity bill by almost 22%. Excellent commercial solution!",
+    name: "Chandrashekar Raju",
+    place: "Bengaluru",
+  },
+];
 
-  const [menuOpen, setMenuOpen] = useState(false);
+/** Two letters from a name, for the avatar. */
+function initials(name: string) {
+  return name
+    .replace(/^(Dr|Mr|Mrs|Ms)\.?\s+/i, "")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
-  const [lightsOn, setLightsOn] = useState(true);
+const WA = "https://wa.me/916384079529?text=" + encodeURIComponent(
+  "Hello SmartNest! I would like to know more about KNX smart home automation."
+);
 
-  const [brightness, setBrightness] = useState(72);
-
-  const [temperature, setTemperature] = useState(23);
-
-  const [curtains, setCurtains] = useState(68);
-
-  const [securityOn, setSecurityOn] = useState(true);
-
-  const [activeScene, setActiveScene] = useState("welcome");
-  const [selectedRoom, setSelectedRoom] = useState("Living room");
-
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  async function handleContactSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    setSubmitError("");
-
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    formData.set("_subject", "New SmartNest Website Enquiry");
-
-    try {
-      const response = await fetch("https://formspree.io/f/xkjoqeyl", {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/json" },
-      });
-
-      if (!response.ok) {
-        let message = "Your enquiry could not be sent. Please try again or contact us on WhatsApp.";
-        try {
-          const result = await response.json();
-          if (result?.errors?.length) {
-            message = result.errors.map((item: { message: string }) => item.message).join(" ");
-          }
-        } catch {
-          // Keep the fallback message if Formspree does not return JSON.
-        }
-        setSubmitError(message);
-        return;
-      }
-
-      setSubmitted(true);
-      form.reset();
-    } catch {
-      setSubmitError("Connection error. Please check your internet and try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-
-
-  function chooseScene(scene: (typeof scenes)[number]) {
-
-    setActiveScene(scene.id);
-
-    setBrightness(scene.light);
-
-    setLightsOn(scene.light > 0);
-
-    setTemperature(scene.temp);
-    setCurtains(scene.id === "movie" ? 100 : scene.id === "relax" ? 55 : 25);
-    setSecurityOn(scene.id !== "welcome");
-
-  }
-
-
-
+export default function ApplePage() {
   return (
-
-    <main>
-
-      <nav className="navbar">
-
-        <a href="#home" className="brand" aria-label="SmartNest home">
-
-          <span className="brand-symbol"><span /><span /><span /></span>
-
-          <span>smart<span className="brand-light">nest</span><small>INTELLIGENT LIVING</small></span>
-
-        </a>
-
-
-
-        <div className={`nav-links ${menuOpen ? "nav-open" : ""}`}>
-
-          <a href="#solutions" onClick={() => setMenuOpen(false)}>Solutions</a>
-
-          <a href="#experience" onClick={() => setMenuOpen(false)}>Experience</a>
-
-          <a href="#spaces" onClick={() => setMenuOpen(false)}>Spaces</a>
-
-          <a href="#technology" onClick={() => setMenuOpen(false)}>Technology</a>
-
-          <a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a>
-
-          <a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>
-
-            Plan your home <ArrowUpRight size={16} />
-
+    <div className="ap-root">
+      {/* ── Nav ─────────────────────────────────────────────────────── */}
+      <header className="ap-nav">
+        <div className="ap-nav-inner">
+          <a href="#top" className="ap-logo">
+            <span className="ap-logo-mark" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
+            SmartNest
           </a>
 
-        </div>
-
-
-
-        <button type="button" className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
-
-          {menuOpen ? <X /> : <Menu />}
-
-        </button>
-
-      </nav>
-
-
-
-      <section className="hero" id="home">
-
-        <div className="hero-image" />
-
-        <div className="hero-overlay" />
-
-        <div className="hero-content">
-
-          <div className="eyebrow hero-rise hero-rise-1">
-
-            <span className="status-dot" /> THE FUTURE OF HOME, TODAY
-
-          </div>
-
-          <h1 className="hero-rise hero-rise-2">
-
-            Your home.<br />
-
-            <span>Your intelligence.</span>
-
-          </h1>
-
-          <p className="hero-rise hero-rise-3">
-
-            Thoughtfully engineered KNX automation that brings lighting,
-
-            comfort, security and design together in perfect harmony.
-
-          </p>
-
-          <div className="hero-actions hero-rise hero-rise-4">
-
-            <a className="button button-primary" href="#contact">Build your smart home <ArrowRight size={17} /></a>
-
-            <a className="button button-ghost" href="#experience"><span className="play-icon">↗</span> Explore the experience</a>
-
-          </div>
-
-          <div className="hero-footnote">
-
-            <span>BUILT AROUND YOU</span><span className="foot-line" /><span>POWERED BY KNX</span>
-
-          </div>
-
-        </div>
-
-
-
-        <motion.div
-
-          className="floating-card"
-
-          initial={{ opacity: 0, x: 20 }}
-
-          animate={{ opacity: 1, x: 0 }}
-
-          transition={{ delay: 0.6 }}
-
-        >
-
-          <div className="floating-top"><span className="tiny-live" /> YOUR HOME AT A GLANCE <Wifi size={14} /></div>
-
-          <div className="floating-main">
-
-            <div className="floating-icon"><Lightbulb size={20} /></div>
-
-            <div><strong>Evening ambience</strong><small>Living room · Active</small></div>
-
-            <span className="toggle toggle-on"><i /></span>
-
-          </div>
-
-          <div className="floating-bottom"><span>Lighting</span><strong>72%</strong><div className="mini-track"><i /></div></div>
-
-        </motion.div>
-
-        <a className="scroll-indicator" href="#solutions"><span>SCROLL TO DISCOVER</span><ArrowDownRight size={17} /></a>
-
-      </section>
-
-
-
-      <section className="trust-strip">
-
-        <div><span className="trust-mark">01</span><p>DESIGNED AROUND<br /><strong>YOUR LIFESTYLE</strong></p></div>
-
-        <div><span className="trust-mark">02</span><p>ENGINEERED FOR<br /><strong>RELIABLE CONTROL</strong></p></div>
-
-        <div><span className="trust-mark">03</span><p>READY FOR<br /><strong>WHAT COMES NEXT</strong></p></div>
-
-        <div className="trust-knx">SMART LIVING, <span>SIMPLIFIED.</span></div>
-
-      </section>
-
-
-
-      <section className="section solutions-section" id="solutions">
-
-        <div className="section-heading">
-
-          <div>
-
-            <div className="eyebrow dark-eyebrow"><span className="status-dot" /> THE SMARTNEST APPROACH</div>
-
-            <h2>Technology that<br /><span>feels effortless.</span></h2>
-
-          </div>
-
-          <p>Great automation isn’t about adding more technology. It’s about making everyday living feel beautifully simple.</p>
-
-        </div>
-
-        <div className="feature-grid">
-
-          {features.map((feature, index) => {
-
-            const Icon = feature.icon;
-
-            return (
-
-              <motion.article
-
-                className="feature-card"
-
-                key={feature.title}
-
-                initial={{ opacity: 0, y: 20 }}
-
-                whileInView={{ opacity: 1, y: 0 }}
-
-                viewport={{ once: true }}
-
-                transition={{ delay: index * 0.08 }}
-
-              >
-
-                <div className="feature-number">0{index + 1}</div>
-
-                <div className="feature-icon"><Icon size={23} strokeWidth={1.5} /></div>
-
-                <h3>{feature.title}</h3>
-
-                <p>{feature.text}</p>
-
-                <a href="#contact" aria-label={`Enquire about ${feature.title}`}><ArrowUpRight size={18} /></a>
-
-              </motion.article>
-
-            );
-
-          })}
-
-        </div>
-
-      </section>
-
-
-      
-<section className="experience-section" id="experience">
-
-        <div className="experience-copy">
-
-          <div className="eyebrow"><span className="status-dot" /> YOUR HOME, YOUR RULES</div>
-
-          <h2>One touch.<br /><span>A different world.</span></h2>
-
-          <p>Start your morning, settle into the evening or set the scene for movie night. Your home responds to the way you live.</p>
-
-          <div className="experience-points">
-
-            <div><Check size={16} /> Personalised scenes</div>
-
-            <div><Check size={16} /> Intuitive control</div>
-
-            <div><Check size={16} /> A connected experience</div>
-
-          </div>
-
-          <a href="#contact" className="text-link">Create your experience <ArrowRight size={17} /></a>
-
-        </div>
-
-
-
-        <motion.div className="control-panel" aria-label="Interactive smart home demo" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, ease: "easeOut" }}>
-
-          <div className="panel-top">
-
-            <div><span className="panel-label">SMARTNEST / HOME</span><h3>Good evening.</h3><p>Your home is ready for you.</p></div>
-
-            <div className="panel-avatar"><Fingerprint size={22} /></div>
-
-          </div>
-
-          <div className="panel-status"><span><i className="status-dot" /> SYSTEM ONLINE</span><span>DEMO MODE</span></div>
-
-          <div className="room-selector" aria-label="Choose a room">
-            {["Living room", "Bedroom", "Kitchen"].map((room) => (
-              <button type="button" key={room} className={selectedRoom === room ? "room-tab room-tab-active" : "room-tab"} onClick={() => { setSelectedRoom(room); setActiveScene(""); }}>
-                {room}
-              </button>
+          <nav className="ap-nav-links" aria-label="Main">
+            {NAV.map((n) => (
+              <a key={n.href} href={n.href}>
+                {n.label}
+              </a>
             ))}
-          </div>
+          </nav>
 
-          
-<div
-  className={`demo-visual demo-visual-${activeScene || "custom"}`}
-  style={{
-    "--demo-brightness": `${lightsOn ? brightness : 0}%`,
-    backgroundImage: `url("${
-      selectedRoom === "Bedroom"
-        ? "/images/scene-bedroom.jpg"
-        : selectedRoom === "Kitchen"
-          ? "/images/scene-kitchen.jpg"
-          : "/images/scene-living-ambient.jpg"
-    }")`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  } as React.CSSProperties}
->
+          <a className="ap-nav-cta" href="#contact">
+            Get a quote
+          </a>
+        </div>
+      </header>
 
-            <div className="demo-visual-sky" />
-            <div className="demo-window"><span /><span /><span /></div>
-            <div className="demo-sofa" />
-            <div className="demo-floor-glow" />
-            <div className="demo-visual-caption"><span className="tiny-live" /> {selectedRoom.toUpperCase()} <strong>{lightsOn ? `${brightness}% LIGHTING` : "LIGHTS OFF"}</strong></div>
-          </div>
+      <main id="top">
+        {/* ── Hero ──────────────────────────────────────────────────── */}
+        <section className="ap-hero ap-section">
+          <div className="ap-wrap">
+            <span className="ap-eyebrow ap-rise ap-rise-1">
+              Certified KNX Partner · Hosur & Bengaluru
+            </span>
 
-          <div className="scene-label">CHOOSE A SCENE</div>
+            <h1 className="ap-h1 ap-rise ap-rise-2">
+              Smart living.
+              <br />
+              Simplified.
+            </h1>
 
-          <div className="scene-grid">
+            <p className="ap-lead ap-hero-lead ap-rise ap-rise-3">
+              Certified KNX automation for luxury homes and villas — lighting, climate,
+              gates, security and water, designed and programmed as one system.
+            </p>
 
-            {scenes.map(scene => {
-
-              const Icon = scene.icon;
-
-              return (
-
-                <button type="button" key={scene.id} className={`scene-button ${activeScene === scene.id ? "scene-active" : ""}`} onClick={() => chooseScene(scene)}>
-
-                  <Icon size={19} /><span>{scene.name}</span>
-
-                </button>
-
-              );
-
-            })}
-
-          </div>
-
-
-
-          <div className="control-row">
-
-            <div className="control-icon"><Lightbulb size={20} /></div>
-
-            <div className="control-info"><strong>{selectedRoom} lights</strong><small>{lightsOn ? "Lights are on" : "Lights are off"}</small></div>
-
-            <button type="button" className={`toggle ${lightsOn ? "toggle-on" : ""}`} onClick={() => setLightsOn(!lightsOn)} aria-label="Toggle living room lights"><i /></button>
-
-          </div>
-
-          <div className="range-control">
-
-            <div className="range-label"><span>Brightness</span><strong>{lightsOn ? brightness : 0}%</strong></div>
-
-            <input type="range" min="0" max="100" value={brightness} onChange={e => { setBrightness(Number(e.target.value)); setActiveScene(""); }} aria-label="Brightness" style={{ "--range-value": `${brightness}%` } as React.CSSProperties} />
-
-          </div>
-
-
-
-          <div className="control-row">
-
-            <div className="control-icon"><Thermometer size={20} /></div>
-
-            <div className="control-info"><strong>Climate control</strong><small>{selectedRoom} temperature</small></div>
-
-            <div className="temperature-control">
-
-              <button type="button" onClick={() => setTemperature(Math.max(16, temperature - 1))} aria-label="Decrease temperature">−</button>
-
-              <strong>{temperature}°</strong>
-
-              <button type="button" onClick={() => setTemperature(Math.min(30, temperature + 1))} aria-label="Increase temperature">+</button>
-
+            <div className="ap-actions ap-hero-actions ap-rise ap-rise-4">
+              <a className="ap-btn ap-btn-primary" href="#contact">
+                Book a consultation <ArrowRight size={17} />
+              </a>
+              <a className="ap-btn ap-btn-ghost" href="#demo">
+                Try the live KNX demo
+              </a>
             </div>
 
+            <div className="ap-hero-badges ap-rise ap-rise-4">
+              <span className="ap-badge">
+                <BadgeCheck /> ISO/IEC 14543 certified
+              </span>
+              <span className="ap-badge">
+                <Zap /> Up to 30% energy savings
+              </span>
+              <span className="ap-badge">
+                <ShieldCheck /> KNX Secure protocol
+              </span>
+            </div>
           </div>
 
-
-
-          <div className="range-control">
-
-            <div className="range-label"><span>Curtain position</span><strong>{curtains}%</strong></div>
-
-            <input type="range" min="0" max="100" value={curtains} onChange={e => setCurtains(Number(e.target.value))} aria-label="Curtain position" style={{ "--range-value": `${curtains}%` } as React.CSSProperties} />
-
-          </div>
-
-
-
-          <div className="control-row security-row">
-
-            <div className="control-icon"><ShieldCheck size={20} /></div>
-
-            <div className="control-info"><strong>Home security</strong><small>{securityOn ? "Your home is protected" : "Security demo disabled"}</small></div>
-
-            <button type="button" className={`toggle ${securityOn ? "toggle-on" : ""}`} onClick={() => setSecurityOn(!securityOn)} aria-label="Toggle security demo"><i /></button>
-
-          </div>
-
-          <div className="demo-note"><Zap size={14} /> Interactive website demo — not connected to physical devices.</div>
-
-        </motion.div>
-
-      </section>
-
-
-
-
-
-
-      <section className="visual-gallery-section" id="spaces">
-        <div className="gallery-heading">
-          <div>
-            <div className="eyebrow"><span className="status-dot" /> THOUGHTFUL DESIGN, INTELLIGENT LIVING</div>
-            <h2>Spaces that feel<br /><span>effortlessly yours.</span></h2>
-          </div>
-          <p>Explore the mood, materials and atmosphere of considered living. Every detail can work together — quietly, beautifully, intelligently.</p>
-        </div>
-
-        <div className="gallery-feature-grid">
-          <div className="gallery-flip-card">
-            <div className="gallery-card-kicker">A CLOSER LOOK <span>01 / 04</span></div>
-            <div className="gallery-flip-frame">
-              <ImageFlip
-                images={[
-                  { image: { src: "/images/scene-villa-dusk.jpg", alt: "Modern SmartNest villa exterior at dusk" }, focusY: 50 },
-                  { image: { src: "/images/scene-living-ambient.jpg", alt: "Living room with layered ambient lighting" }, focusY: 50 },
-                  { image: { src: "/images/scene-foyer.jpg", alt: "Entrance foyer with concealed step lighting" }, focusY: 50 },
-                  { image: { src: "/images/scene-terrace.jpg", alt: "Villa terrace and pool lighting at dusk" }, focusY: 50 },
-                ]}
-                fit="cover"
-                rounded={18}
-                tilt
-                tiltOptions={{ effect: "repel", tiltLimit: 8, scale: 103 }}
+          <div className="ap-wide">
+            <div className="ap-hero-media ap-rise ap-rise-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/scene-villa-dusk.jpg"
+                alt="Modern luxury villa at dusk with warm interior lighting and landscaped garden lighting, installed by SmartNest"
+                width={1536}
+                height={1024}
               />
             </div>
-            <div className="gallery-card-footer"><strong>Designed around your life</strong><span>Click either side to flip <span aria-hidden="true">↗</span></span></div>
           </div>
+        </section>
 
-          <div className="gallery-copy-card">
-            <span className="gallery-index">02 — ATMOSPHERE</span>
-            <h3>Technology should disappear into the experience.</h3>
-            <p>Lighting, climate and shading can respond as one — helping each room feel right throughout the day.</p>
-            <a href="#experience" className="text-link">Explore the interactive home <ArrowRight size={17} /></a>
-            <div className="gallery-stats">
-              <div><span className="stat-orb"><Lightbulb size={18} /></span><strong>Lighting</strong><small>Set the mood</small></div>
-              <div><span className="stat-orb"><Thermometer size={18} /></span><strong>Climate</strong><small>Find your comfort</small></div>
-              <div><span className="stat-orb"><ShieldCheck size={18} /></span><strong>Control</strong><small>One connected home</small></div>
+        {/* ── Partner strip ─────────────────────────────────────────── */}
+        <section className="ap-section-sm ap-alt">
+          <div className="ap-wrap ap-center">
+            <p className="ap-small" style={{ marginBottom: 4 }}>
+              Certified interoperability — we work with the hardware you trust
+            </p>
+            <div className="ap-partners">
+              {[
+                "Schneider Electric",
+                "KNX",
+                "GM Modular",
+                "CP Plus",
+                "Hikvision",
+                "Ajax Systems",
+                "DALI",
+                "Honeywell",
+                "Yale",
+                "ZKTeco",
+                "HomeMate",
+                "Sonoff",
+              ].map((p) => (
+                <span key={p} className="ap-partner">
+                  {p}
+                </span>
+              ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="carousel-gallery-block">
-          <div className="carousel-gallery-copy">
-            <span className="gallery-index">03 — INSPIRED SPACES</span>
-            <h3>Move through ideas.<br /><span>Find your feeling.</span></h3>
-            <p>Drag the gallery to explore the imagery. This is an inspiration gallery, not a portfolio of completed SmartNest projects.</p>
+        {/* ── Services ──────────────────────────────────────────────── */}
+        <section className="ap-section-lg" id="services">
+          <div className="ap-wrap">
+            <div className="ap-center">
+              <span className="ap-eyebrow">Our capabilities</span>
+              <h2 className="ap-h2">
+                Everything your home needs.
+                <br />
+                Under one roof.
+              </h2>
+              <p className="ap-lead" style={{ marginTop: 22 }}>
+                From a single wireless switch to a fully wired KNX villa — we design,
+                install, program and support every system we sell.
+              </p>
+            </div>
+
+            <div className="ap-grid">
+              {SERVICES.map((s, i) => {
+                const Icon = s.icon;
+                return (
+                  <article
+                    key={s.title}
+                    className={`ap-card ${i % 2 === 1 ? "ap-alt" : ""}`}
+                    style={i % 2 === 1 ? { background: "#f5f5f7" } : undefined}
+                  >
+                    <span className="ap-card-icon">
+                      <Icon aria-hidden />
+                    </span>
+                    <h3 className="ap-h4">{s.title}</h3>
+                    <p className="ap-card-desc">{s.desc}</p>
+                    <ul className="ap-features">
+                      {s.points.map((p) => (
+                        <li key={p}>
+                          <Check aria-hidden />
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
+                    <a className="ap-link" href="#contact">
+                      Get a quote <ArrowRight />
+                    </a>
+                  </article>
+                );
+              })}
+            </div>
           </div>
-          <div className="round-carousel-frame" aria-label="Interactive rotating inspiration gallery">
+        </section>
+
+        {/* ── KNX interactive demo ──────────────────────────────────── */}
+        <section className="ap-section-lg ap-dark" id="demo">
+          <div className="ap-wide">
+            <div className="ap-center">
+              <span className="ap-eyebrow">Live interactive demonstration</span>
+              <h2 className="ap-h2">
+                See how KNX actually behaves.
+              </h2>
+              <p className="ap-lead" style={{ marginTop: 22 }}>
+                Tap a room to switch its lighting, or choose a scene and watch every
+                system respond together — exactly as it would on a real KNX bus.
+              </p>
+            </div>
+
+            <KnxDemo />
+          </div>
+        </section>
+
+        {/* ── Why KNX + stats ───────────────────────────────────────── */}
+        <section className="ap-section-lg" id="why">
+          <div className="ap-wrap">
+            <div className="ap-split">
+              <div>
+                <span className="ap-eyebrow">Why KNX</span>
+                <h2 className="ap-h2">
+                  The difference is
+                  <br />
+                  the wiring.
+                </h2>
+                <p className="ap-body" style={{ marginTop: 20 }}>
+                  Most &ldquo;smart homes&rdquo; are a collection of WiFi gadgets from
+                  different brands held together by apps. KNX is a single, certified,
+                  wired standard — which is why it behaves differently when it matters.
+                </p>
+
+                <ul className="ap-points">
+                  {WHY.map((w) => {
+                    const Icon = w.icon;
+                    return (
+                      <li key={w.title} className="ap-point">
+                        <span className="ap-point-icon">
+                          <Icon aria-hidden />
+                        </span>
+                        <div>
+                          <h4 className="ap-h4">{w.title}</h4>
+                          <p>{w.body}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              <div className="ap-split-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/scene-living-ambient.jpg"
+                  alt="Living room at night with layered warm lighting and automated curtains, controlled over KNX"
+                  width={1536}
+                  height={1024}
+                />
+              </div>
+            </div>
+
+            <ul className="ap-stats" style={{ marginTop: 96 }}>
+              {STATS.map((s) => (
+                <li key={s.label}>
+                  <span className="ap-stat-value">{s.value}</span>
+                  <span className="ap-stat-label">{s.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── Process ───────────────────────────────────────────────── */}
+        {/* ── Spaces ────────────────────────────────────────────────── */}
+        <section className="ap-section-lg ap-dark" id="spaces">
+          <div className="ap-wide">
+            <div className="ap-center">
+              <span className="ap-eyebrow">Spaces</span>
+              <h2 className="ap-h2">
+                Designed around
+                <br />
+                the way you live.
+              </h2>
+              <p className="ap-lead" style={{ marginTop: 22 }}>
+                Every one of these is a scene your home shifts into with a single tap —
+                morning light, cinema dark, garden at dusk. Flip through, then drag the
+                gallery.
+              </p>
+            </div>
+
+            <div className="ap-spaces">
+              <div className="ap-spaces-flip">
+                <ImageFlip
+                  images={[
+                    {
+                      image: {
+                        src: "/images/scene-living-ambient.jpg",
+                        alt: "Living room in warm evening light with layered cove and sconce lighting",
+                      },
+                      focusY: 50,
+                    },
+                    {
+                      image: {
+                        src: "/images/scene-cinema.jpg",
+                        alt: "Home cinema set to movie mode with low ambient lighting",
+                      },
+                      focusY: 50,
+                    },
+                    {
+                      image: {
+                        src: "/images/scene-foyer.jpg",
+                        alt: "Entrance foyer with concealed step lighting switched on",
+                      },
+                      focusY: 50,
+                    },
+                    {
+                      image: {
+                        src: "/images/scene-terrace.jpg",
+                        alt: "Villa terrace and pool lighting at dusk",
+                      },
+                      focusY: 50,
+                    },
+                  ]}
+                  fit="cover"
+                  rounded={18}
+                  tilt
+                  tiltOptions={{ effect: "repel", tiltLimit: 8, scale: 103 }}
+                />
+                <p className="ap-spaces-hint">
+                  Click either side of the card to flip through scenes
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="ap-spaces-carousel" aria-label="Rotating gallery of interiors">
             <RoundCarousel
               imageWidth={190}
-              imageHeight={230}
+              imageHeight={240}
               spacing={2.1}
-              speed={1.6}
+              speed={1.4}
               direction="right"
               drag
               sensitivity={3.2}
@@ -642,360 +563,188 @@ export default function Home() {
               background="transparent"
             />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="technology-section" id="technology">
+        <section className="ap-section" id="process">
+          <div className="ap-wrap">
+            <div className="ap-center">
+              <span className="ap-eyebrow">How we work</span>
+              <h2 className="ap-h2">Four steps, no surprises.</h2>
+            </div>
 
-        <div className="tech-visual">
-
-          <div className="tech-orbit orbit-one" /><div className="tech-orbit orbit-two" /><div className="tech-orbit orbit-three" />
-
-          <div className="tech-core"><span className="brand-symbol large"><span /><span /><span /></span><strong>SMARTNEST</strong><small>CONNECTED LIVING</small></div>
-
-          <div className="orbit-tag tag-one"><Lightbulb size={17} /> Lighting</div>
-
-          <div className="orbit-tag tag-two"><Thermometer size={17} /> Climate</div>
-
-          <div className="orbit-tag tag-three"><ShieldCheck size={17} /> Security</div>
-
-          <div className="orbit-tag tag-four"><Smartphone size={17} /> Control</div>
-
-        </div>
-
-        <div className="tech-copy">
-
-          <div className="eyebrow dark-eyebrow"><span className="status-dot" /> BUILT ON A PROVEN STANDARD</div>
-
-          <h2>Beautifully designed.<br /><span>Intelligently connected.</span></h2>
-
-          <p>KNX is a globally recognised standard for building control. SmartNest brings the technology and thoughtful design together to create a home that works as one.</p>
-
-          <div className="tech-benefits">
-
-            <div><span className="benefit-check"><Check size={15} /></span><div><strong>One connected ecosystem</strong><p>Coordinate lighting, climate, shading and more.</p></div></div>
-
-            <div><span className="benefit-check"><Check size={15} /></span><div><strong>Designed to evolve</strong><p>Plan for your needs today and tomorrow.</p></div></div>
-
-            <div><span className="benefit-check"><Check size={15} /></span><div><strong>Personalised to your space</strong><p>Control experiences designed around your routine.</p></div></div>
-
+            <ol className="ap-steps">
+              {PROCESS.map((p) => (
+                <li key={p.n} className="ap-step">
+                  <span className="ap-step-num">{p.n}</span>
+                  <h4 className="ap-h4">{p.title}</h4>
+                  <p>{p.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
-
-          <a href="#contact" className="text-link">Explore a SmartNest project <ArrowRight size={17} /></a>
-
-        </div>
-
-      </section>
-
-
-
-      {/* ── Villa cutaway showcase ──────────────────────────────────
-          Deliberately its own section with its own class namespace.
-          It is NOT added to .technology-section, which carries a deep
-          specificity war (18 competing rule sets). */}
-      <section className="nx-showcase" aria-labelledby="nx-showcase-title">
-
-        <figure className="nx-showcase-frame">
-
-          <Image
-
-            src="/images/smartnest-villa.jpg"
-
-            alt="Cutaway view of a modern villa showing lighting controlled independently in each room, with the ground floor, upper floor and landscaped garden all visibly lit"
-
-            width={1600}
-
-            height={1067}
-
-            sizes="(max-width: 768px) 100vw, 1200px"
-
-            className="nx-showcase-image"
-
-          />
-
-          <div className="nx-showcase-scrim" aria-hidden="true" />
-
-          <figcaption className="nx-showcase-caption">
-
-            <span className="nx-showcase-kicker">ONE HOME, FULLY CONNECTED</span>
-
-            <h2 id="nx-showcase-title">Every room.<br /><span>One system.</span></h2>
-
-            <p>Lighting, climate, shading and security across an entire property — coordinated from a single layer of control that never asks you to think about it.</p>
-
-            <span className="nx-showcase-note">Illustrative visual prepared for SmartNest — not a photograph of a completed project.</span>
-
-          </figcaption>
-
-        </figure>
-
-      </section>
-
-
-
-      {/* ── How a project works ─────────────────────────────────────
-          The single biggest question a custom-installation customer
-          has is "what actually happens if I get in touch?" — the site
-          previously never answered it. */}
-      <section className="nx-process" id="process" aria-labelledby="nx-process-title">
-
-        <div className="nx-process-head">
-
-          <span className="nx-kicker">HOW IT WORKS</span>
-
-          <h2 id="nx-process-title">From first conversation<br /><span>to first scene.</span></h2>
-
-          <p>Every SmartNest project follows the same four steps — whether it&apos;s a single apartment or a full villa.</p>
-
-        </div>
-
-        <ol className="nx-steps">
-
-          <li>
-            <span className="nx-step-num">01</span>
-            <h3>Conversation</h3>
-            <p>Tell us about your home and how you actually live in it. We&apos;ll be straight with you about what&apos;s worth automating and what isn&apos;t — no cost, no obligation.</p>
-          </li>
-
-          <li>
-            <span className="nx-step-num">02</span>
-            <h3>Design &amp; proposal</h3>
-            <p>We map every circuit, sensor and scene, coordinate with your architect or electrician, then give you a written scope with a fixed price.</p>
-          </li>
-
-          <li>
-            <span className="nx-step-num">03</span>
-            <h3>Installation &amp; programming</h3>
-            <p>Our team handles wiring, commissioning and programming, and works around your schedule if the home is already occupied.</p>
-          </li>
-
-          <li>
-            <span className="nx-step-num">04</span>
-            <h3>Handover &amp; support</h3>
-            <p>We walk you through your system in person, leave you with clear documentation, and stay reachable long after the final invoice.</p>
-          </li>
-
-        </ol>
-
-      </section>
-
-
-
-      {/* ── FAQ ─────────────────────────────────────────────────────
-          Native <details>/<summary> — the accordion works with zero
-          JavaScript, and collapses correctly for search engines and
-          screen readers. */}
-      <section className="nx-faq" id="faq" aria-labelledby="nx-faq-title">
-
-        <div className="nx-faq-head">
-
-          <span className="nx-kicker">COMMON QUESTIONS</span>
-
-          <h2 id="nx-faq-title">Things people<br /><span>ask us first.</span></h2>
-
-          <p>If your question isn&apos;t here, message us on WhatsApp — we usually reply the same day.</p>
-
-        </div>
-
-        <div className="nx-faq-list">
-
-          <details>
-            <summary>What exactly is KNX?</summary>
-            <p>KNX is an international open standard for building control, used in everything from homes to airports. Unlike app-based WiFi gadgets, KNX devices talk to each other over their own dedicated wiring — so you&apos;re not locked into one brand&apos;s app, and the system keeps working when the internet doesn&apos;t.</p>
-          </details>
-
-          <details>
-            <summary>Will my lights still work if the internet goes down?</summary>
-            <p>Yes — and this is one of the main reasons people choose KNX over WiFi-based systems. Your switches, dimming and scenes are wired and run locally, so the house carries on as normal. Internet access is only needed for controlling things remotely from your phone.</p>
-          </details>
-
-          <details>
-            <summary>Can this be installed in my existing home, or is it only for new builds?</summary>
-            <p>Both. A new build or major renovation is the cleanest moment, because wiring can be planned into the structure. But retrofits are common too — we can often work through existing conduit, and we can do it room by room if you&apos;d rather not take on the whole house at once.</p>
-          </details>
-
-          <details>
-            <summary>How much does a system cost?</summary>
-            <p>It depends on the size of the home and how many functions you want, so there&apos;s no honest single number — anyone quoting one without seeing your home is guessing. Together we agree what matters most, and you get a written scope with a fixed price before any work begins.</p>
-          </details>
-
-          <details>
-            <summary>How long does installation take?</summary>
-            <p>For a new home we work alongside the construction schedule, so the automation is complete as the house is. For retrofits we&apos;ll give you a realistic, room-by-room timeline in the proposal — and we don&apos;t start until you&apos;re comfortable with it.</p>
-          </details>
-
-          <details>
-            <summary>What happens after installation if something goes wrong?</summary>
-            <p>You get our direct contact details, not a call centre, and we stand behind the system we installed. Because KNX is an open standard supported by multiple manufacturers, replacement parts stay available for the long term — you&apos;re never dependent on one supplier.</p>
-          </details>
-
-        </div>
-
-      </section>
-
-
-
-      <section className="quote-section">
-
-        <span className="quote-mark">“</span>
-
-        <p>The best technology is the kind you don’t have to think about.</p>
-
-        <span className="quote-caption">SMARTER SPACES. MORE MEANINGFUL MOMENTS.</span>
-
-      </section>
-
-
-
-      <section className="contact-section" id="contact">
-
-        <div className="contact-copy">
-
-          <div className="eyebrow"><span className="status-dot" /> LET’S BUILD SOMETHING BETTER</div>
-
-          <h2>Your vision.<br /><span>Our expertise.</span></h2>
-
-          <p>Planning a new home, renovating a space or exploring automation? Tell us what you have in mind.</p>
-
-          <div className="contact-note"><span className="contact-note-icon"><Sparkles size={20} /></span><span><strong>Start with a conversation.</strong><small>We’ll help you explore the right possibilities for your home.</small></span></div>
-
-        </div>
-
-        <form className="contact-form" onSubmit={handleContactSubmit}>
-          {submitted ? (
-
-            <div className="form-success"><span><Check size={24} /></span><h3>Thanks for reaching out.</h3><p>Your enquiry has been submitted. The SmartNest team will be in touch soon.</p><button type="button" className="text-link" onClick={() => { setSubmitted(false); setSubmitError(""); }}>Send another enquiry <ArrowRight size={16} /></button></div>
-
-          ) : (
-
-            <>
-
-              <span className="form-kicker">YOUR SMART HOME STARTS HERE</span>
-
-              <h3>Tell us about your project.</h3>
-
-              <label>Your name<input required name="name" placeholder="Full name" /></label>
-
-              <label>Email address<input required name="email" type="email" placeholder="you@example.com" /></label>
-
-              <label>What are you planning?
-
-                <select name="project" defaultValue="" required>
-
-                  <option value="" disabled>Select project type</option>
-
-                  <option>New home / villa</option>
-
-                  <option>Apartment</option>
-
-                  <option>Renovation</option>
-
-                  <option>Commercial space</option>
-
-                  <option>Just exploring</option>
-
-                </select>
-
-              </label>
-
-              <label>Tell us a little more<textarea name="message" rows={3} placeholder="Your ideas, requirements or questions..." /></label>
-
-              <button type="submit" className="button button-primary form-submit" disabled={isSubmitting}>{isSubmitting ? "Sending enquiry..." : "Send enquiry"} <ArrowRight size={17} /></button>
-
-              {submitError && <p className="form-disclaimer" role="alert">{submitError}</p>}
-
-              <p className="form-disclaimer">Your details will be sent to SmartNest for follow-up.</p>
-
-            </>
-
-          )}
-
-        </form>
-
-      </section>
-
-
-
-      {/* SMARTNEST WHATSAPP ENQUIRIES */}
-
+        </section>
+
+        {/* ── Reviews ───────────────────────────────────────────────── */}
+        <section className="ap-section-lg ap-alt" id="reviews">
+          <div className="ap-wrap">
+            <div className="ap-center">
+              <span className="ap-eyebrow">Client experiences</span>
+              <h2 className="ap-h2">Homes we&apos;ve already done.</h2>
+              <p className="ap-lead" style={{ marginTop: 22 }}>
+                Real reviews from homeowners and business owners across Hosur and
+                Bengaluru.
+              </p>
+            </div>
+
+            <div className="ap-quotes">
+              {REVIEWS.map((r) => (
+                <figure key={r.name} className="ap-quote">
+                  <span className="ap-quote-mark" aria-hidden>
+                    &ldquo;
+                  </span>
+                  <blockquote style={{ margin: 0 }}>
+                    <p>{r.quote}</p>
+                  </blockquote>
+                  <figcaption className="ap-quote-who">
+                    <span className="ap-avatar" aria-hidden>
+                      {initials(r.name)}
+                    </span>
+                    <span>
+                      <strong>{r.name}</strong>
+                      <small>{r.place}</small>
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Contact ───────────────────────────────────────────────── */}
+        <section className="ap-section-lg ap-dark" id="contact">
+          <div className="ap-wrap">
+            <div className="ap-contact">
+              <div>
+                <span className="ap-eyebrow">Get started</span>
+                <h2 className="ap-h2">
+                  Tell us about
+                  <br />
+                  your home.
+                </h2>
+                <p className="ap-body" style={{ marginTop: 20, maxWidth: 460 }}>
+                  No obligation, no pressure. We&apos;ll come back within one working
+                  day with an honest view of what&apos;s worth doing.
+                </p>
+
+                <ul className="ap-contact-list">
+                  <li>
+                    <span className="ap-contact-icon">
+                      <Phone aria-hidden />
+                    </span>
+                    <span>
+                      <strong>Call us</strong>
+                      <a href="tel:+916384079529">+91 63840 79529</a>
+                      <br />
+                      <a href="tel:+919655952225">+91 96559 52225</a>
+                    </span>
+                  </li>
+                  <li>
+                    <span className="ap-contact-icon">
+                      <MessageCircle aria-hidden />
+                    </span>
+                    <span>
+                      <strong>WhatsApp</strong>
+                      <a href={WA} target="_blank" rel="noopener noreferrer">
+                        Chat with us directly
+                      </a>
+                    </span>
+                  </li>
+                  <li>
+                    <span className="ap-contact-icon">
+                      <Mail aria-hidden />
+                    </span>
+                    <span>
+                      <strong>Email</strong>
+                      <a href="mailto:smartnest5030@gmail.com">
+                        smartnest5030@gmail.com
+                      </a>
+                    </span>
+                  </li>
+                  <li>
+                    <span className="ap-contact-icon">
+                      <MapPin aria-hidden />
+                    </span>
+                    <span>
+                      <strong>Where we work</strong>
+                      <span>Hosur &amp; Bengaluru, India</span>
+                    </span>
+                  </li>
+                </ul>
+
+                <p className="ap-small" style={{ marginTop: 26 }}>
+                  Led by <strong style={{ color: "#eef3fa" }}>Raghul S</strong> and{" "}
+                  <strong style={{ color: "#eef3fa" }}>Tamilvanan B</strong> — the same
+                  people who will answer your call.
+                </p>
+              </div>
+
+              <ContactForm />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Footer ────────────────────────────────────────────────── */}
+        <footer className="ap-footer">
+          <div className="ap-wrap">
+            <div className="ap-footer-top">
+              <a href="#top" className="ap-logo">
+                <span className="ap-logo-mark" aria-hidden>
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                SmartNest
+              </a>
+              <p className="ap-small" style={{ margin: 0 }}>
+                Smart living simplified and amplified.
+              </p>
+            </div>
+
+            <nav className="ap-footer-links" aria-label="Footer">
+              {NAV.map((n) => (
+                <a key={n.href} href={n.href}>
+                  {n.label}
+                </a>
+              ))}
+              <Link href="/classic">Previous design</Link>
+            </nav>
+
+            <div className="ap-footer-bottom">
+              <span>© 2026 SmartNest. All rights reserved.</span>
+              <span>
+                <Fingerprint
+                  size={12}
+                  style={{ verticalAlign: -2, marginRight: 6 }}
+                  aria-hidden
+                />
+                LED &amp; KNX automation · Hosur &amp; Bengaluru
+              </span>
+            </div>
+          </div>
+        </footer>
+      </main>
+
+      {/* ── Floating WhatsApp ───────────────────────────────────────── */}
       <a
-
-        className="whatsapp-float"
-
-        href={"https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent("Hello SmartNest! I would like to know more about KNX smart home automation.")}
-
+        className="ap-wa"
+        href={WA}
         target="_blank"
-
         rel="noopener noreferrer"
-
         aria-label="Chat with SmartNest on WhatsApp"
-
-        onClick={e => {
-
-          if (WHATSAPP_NUMBER.includes("YOURNUMBER")) {
-
-            e.preventDefault();
-
-            alert("Please add your SmartNest WhatsApp number in app/page.tsx first.");
-
-          }
-
-        }}
-
       >
-
-        <MessageCircle size={23} />
-
-        <span>Chat with us</span>
-
+        <MessageCircle aria-hidden />
+        <span>WhatsApp</span>
       </a>
-
-
-
-      <footer className="footer">
-
-        <div className="footer-top">
-
-          <a href="#home" className="brand">
-
-            <span className="brand-symbol"><span /><span /><span /></span>
-
-            <span>smart<span className="brand-light">nest</span><small>INTELLIGENT LIVING</small></span>
-
-          </a>
-
-          <p>Thoughtful technology.<br />A more intuitive way to live.</p>
-
-          <a className="footer-top-link" href="#home">BACK TO TOP <ArrowUpRight size={15} /></a>
-
-        </div>
-
-        <nav className="nx-footer-nav" aria-label="Footer">
-
-          <a href="#solutions">Solutions</a>
-
-          <a href="#experience">Experience</a>
-
-          <a href="#spaces">Spaces</a>
-
-          <a href="#technology">Technology</a>
-
-          <a href="#process">Process</a>
-
-          <a href="#faq">FAQ</a>
-
-          <a href="#contact">Contact</a>
-
-          <Link href="/apple">Apple-style version ↗</Link>
-
-        </nav>
-
-        <div className="footer-bottom"><span>© 2026 SmartNest. All rights reserved.</span><span>DESIGNED FOR BETTER LIVING <span className="footer-dot">●</span></span></div>
-
-      </footer>
-
-    </main>
-
+    </div>
   );
-
 }

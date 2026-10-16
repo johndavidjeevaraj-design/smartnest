@@ -1201,3 +1201,60 @@
   .ap-card { transition: none; }
   .ap-card:hover { transform: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPACES — flip-card gallery + rotating carousel
+   Carried over from the classic design so the Apple layout keeps a
+   visual / social-proof section.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ap-spaces {
+  display: flex;
+  justify-content: center;
+  margin-top: 58px;
+}
+
+.ap-spaces-flip {
+  width: 100%;
+  max-width: 620px;
+}
+
+/* The flip card itself is square-ish; give it a definite height because
+   ImageFlip fills its container. */
+.ap-spaces-flip > div {
+  height: 420px;
+}
+
+.ap-spaces-hint {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ap-text-invert-2);
+}
+
+.ap-spaces-carousel {
+  margin-top: 68px;
+  /* RoundCarousel renders a fixed-height 3D stage */
+  height: 400px;
+  overflow: hidden;
+}
+
+@media (max-width: 920px) {
+  .ap-spaces-flip > div { height: 340px; }
+  .ap-spaces-carousel { height: 320px; margin-top: 48px; }
+  /* The carousel hides its own overflow; keep the nav from competing */
+  .ap-nav-links { gap: 20px; }
+}
+
+@media (max-width: 560px) {
+  .ap-spaces-flip > div { height: 260px; }
+  .ap-spaces-carousel { height: 260px; margin-top: 36px; }
+}
+
+/* Seven nav items no longer fit at the old 920px breakpoint, so the
+   hamburger takes over earlier. Everything below 1024px is a tablet or
+   phone, where the menu button is the expected pattern anyway. */
+@media (max-width: 1024px) {
+  .ap-nav-links { display: none; }
+  .ap-burger { display: flex; }
+}
