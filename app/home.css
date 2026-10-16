@@ -1840,3 +1840,324 @@ html { scroll-padding-top: 66px; }
   .ap-mobile-menu { animation: none; }
   .ap-burger-box span { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOTION LAYER
+   The page is long and mostly scroll-driven, so motion here has one job:
+   tell you where you are and what is interactive. Anything that only
+   moved for decoration was left out.
+
+   Everything in this block is switched off under prefers-reduced-motion
+   at the bottom of the section.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Reading progress ────────────────────────────────────────────────── */
+
+.ap-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 1000;
+  transform-origin: 0 50%;
+  background: var(--ap-gradient-rev);
+}
+
+/* ── Scroll-spy state on the nav ─────────────────────────────────────── */
+
+.ap-nav-links a {
+  position: relative;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.ap-nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ap-gradient-rev);
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ap-nav-links a:hover::after { transform: scaleX(0.5); }
+.ap-nav-links a.is-active { opacity: 1; }
+.ap-nav-links a.is-active::after { transform: scaleX(1); }
+
+/* ── Hero: a drifting colour field instead of a static wash ──────────── */
+
+.ap-hero { background-image: none; }
+.ap-hero > * { position: relative; z-index: 1; }
+
+.ap-hero::before {
+  content: "";
+  position: absolute;
+  inset: -18% -8%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 44% at 22% 30%, rgba(130, 201, 30, 0.2), transparent 62%),
+    radial-gradient(42% 48% at 78% 20%, rgba(0, 168, 232, 0.2), transparent 64%),
+    radial-gradient(34% 40% at 52% 76%, rgba(79, 196, 111, 0.14), transparent 66%);
+  filter: blur(26px);
+  animation: ap-drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes ap-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50%  { transform: translate3d(2%, 2%, 0) scale(1.07); }
+  100% { transform: translate3d(-1%, 1%, 0) scale(1.02); }
+}
+
+.ap-hero-parallax { will-change: transform; }
+
+/* A single slow highlight crossing the hero frame, like a scanner pass. */
+.ap-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.13) 47%,
+    rgba(120, 220, 255, 0.1) 53%,
+    transparent 66%
+  );
+  background-size: 260% 100%;
+  animation: ap-scan 8s ease-in-out infinite;
+}
+
+@keyframes ap-scan {
+  0%, 12%  { background-position: 140% 0; }
+  58%      { background-position: -40% 0; }
+  100%     { background-position: -40% 0; }
+}
+
+/* Monospace readout chips over the hero frame. */
+.ap-hero-hud {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.ap-hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: var(--ap-radius-full);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.93);
+  background: rgba(7, 11, 18, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.ap-live {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ap-green);
+  animation: ap-pulse 2.4s ease-out infinite;
+}
+
+@keyframes ap-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(130, 201, 30, 0.65); }
+  70%  { box-shadow: 0 0 0 9px rgba(130, 201, 30, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(130, 201, 30, 0); }
+}
+
+/* ── Blueprint grid on the dark bands ────────────────────────────────── */
+
+.ap-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 78% 68% at 50% 40%, #000 18%, transparent 76%);
+  mask-image: radial-gradient(ellipse 78% 68% at 50% 40%, #000 18%, transparent 76%);
+}
+
+/* ── Cursor-tracked light on the service cards ───────────────────────── */
+
+.ap-tilt-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  transition: opacity 0.35s ease;
+}
+
+.ap-card:hover .ap-tilt-glow { opacity: 1; }
+.ap-card > *:not(.ap-tilt-glow) { position: relative; z-index: 1; }
+
+/* The static hover wash is redundant now that the light follows the
+   cursor — two overlapping glows read as mud. */
+.ap-card::before { content: none; }
+
+/* ── Stat bars fill as they scroll in ────────────────────────────────── */
+
+.ap-stat-bar {
+  display: block;
+  height: 2px;
+  margin-top: 15px;
+  border-radius: 2px;
+  background: rgba(7, 12, 20, 0.08);
+  overflow: hidden;
+}
+
+.ap-stat-bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--ap-gradient);
+  transform-origin: 0 50%;
+}
+
+/* Scroll-driven where the browser supports it, permanently filled where
+   it does not. No JS, and nothing ever renders empty. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-stat-bar i {
+      animation: ap-fill 1s linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 35%;
+    }
+  }
+}
+
+@keyframes ap-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Partner marquee ─────────────────────────────────────────────────── */
+
+.ap-partners-marquee { margin-top: 26px; }
+
+.ap-marquee {
+  position: relative;
+  overflow: hidden;
+  /* Fade the edges so the loop never visibly cuts a name in half. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+
+.ap-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: ap-marquee 54s linear infinite;
+}
+
+.ap-marquee:hover .ap-marquee-track { animation-play-state: paused; }
+
+.ap-marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 46px;
+  margin: 0;
+  /* Matching padding on both groups keeps the seam gap identical to the
+     internal gap, which is what makes the -50% translate seamless. */
+  padding: 0 23px;
+  list-style: none;
+}
+
+@keyframes ap-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.ap-marquee-static {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 30px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-hero::before,
+  .ap-scan,
+  .ap-live,
+  .ap-marquee-track,
+  .ap-stat-bar i {
+    animation: none;
+  }
+  /* A frozen sweep would sit across the photograph as a permanent smear. */
+  .ap-scan { display: none; }
+  .ap-hero-parallax { transform: none !important; }
+}
+
+/* ── Focus visibility ──────────────────────────────────────────────────
+   When app/globals.css was split off so it only loads on /classic, the
+   twenty focus-visible rules it carried went with it — which left links
+   and buttons on the homepage with no visible focus indicator at all.
+   That is a WCAG 2.1 AA failure (2.4.7), and it is invisible until you
+   actually put the keyboard in your hand.
+   Outline rather than box-shadow: it survives overflow:hidden and
+   border-radius, and it never disappears against a coloured surface. */
+
+.ap-root a:focus-visible,
+.ap-root button:focus-visible,
+.ap-root summary:focus-visible,
+.ap-root [tabindex]:focus-visible {
+  outline: 2px solid var(--ap-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* On the dark bands the azure needs lifting to stay above 3:1 against
+   the near-black behind it. */
+.ap-dark a:focus-visible,
+.ap-dark button:focus-visible,
+.ap-dark [tabindex]:focus-visible {
+  outline-color: #4fd4f5;
+}
+
+/* The active nav link keeps its full-strength colour and its underline,
+   so the ring and the current section are not competing for the same
+   visual language. */
+.ap-nav-links a.is-active { color: var(--ap-text); }
+
+/* ── Press feedback ────────────────────────────────────────────────────
+   A control that does not move when pressed reads as broken on touch,
+   where there is no cursor to change. */
+
+.ap-btn:active,
+.ap-nav-cta:active,
+.ap-mobile-cta:active,
+.ap-wa:active {
+  transform: scale(0.975);
+}
+
+.ap-btn,
+.ap-nav-cta,
+.ap-mobile-cta {
+  transition: transform 0.12s ease, background-color 0.24s ease,
+    box-shadow 0.3s ease, background-position 0.45s ease;
+}

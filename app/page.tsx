@@ -23,6 +23,12 @@ import {
 import "./home.css";
 import ImageFlip from "@/components/ImageFlip";
 import SiteNav from "@/components/SiteNav";
+import CountUp from "@/components/motion/CountUp";
+import Marquee from "@/components/motion/Marquee";
+import Parallax from "@/components/motion/Parallax";
+import Reveal from "@/components/motion/Reveal";
+import ScrollProgress from "@/components/motion/ScrollProgress";
+import TiltCard from "@/components/motion/TiltCard";
 import RoundCarousel from "@/components/RoundCarousel";
 import KnxDemo from "@/components/KnxDemo";
 import ContactForm from "@/components/ContactForm";
@@ -41,11 +47,14 @@ export const metadata: Metadata = {
   },
 };
 
+// Order has to match the order the sections actually appear in, or the
+// nav lies about where you are: "Why KNX" sits above "Spaces" on the
+// page, so it has to be listed first.
 const NAV = [
   { label: "Services", href: "#services" },
   { label: "KNX Demo", href: "#demo" },
-  { label: "Spaces", href: "#spaces" },
   { label: "Why KNX", href: "#why" },
+  { label: "Spaces", href: "#spaces" },
   { label: "Process", href: "#process" },
   { label: "Reviews", href: "#reviews" },
   { label: "Contact", href: "#contact" },
@@ -175,11 +184,26 @@ const HARDWARE = [
   },
 ];
 
-const STATS = [
-  { value: "30+", label: "KNX projects completed" },
-  { value: "100+", label: "Happy clients" },
-  { value: "5+", label: "Years of experience" },
-  { value: "24/7", label: "Technical support" },
+const PARTNERS = [
+  "Schneider Electric",
+  "KNX",
+  "GM Modular",
+  "CP Plus",
+  "Hikvision",
+  "Ajax Systems",
+  "DALI",
+  "Honeywell",
+  "Yale",
+  "ZKTeco",
+  "HomeMate",
+  "Sonoff",
+];
+
+const STATS: { to?: number; suffix?: string; text?: string; label: string }[] = [
+  { to: 30, suffix: "+", label: "KNX projects completed" },
+  { to: 100, suffix: "+", label: "Happy clients" },
+  { to: 5, suffix: "+", label: "Years of experience" },
+  { text: "24/7", label: "Technical support" },
 ];
 
 const WHY = [
@@ -284,6 +308,7 @@ const WA = "https://wa.me/916384079529?text=" + encodeURIComponent(
 export default function ApplePage() {
   return (
     <div className="ap-root">
+      <ScrollProgress />
       {/* ── Nav ─────────────────────────────────────────────────────── */}
       <SiteNav links={NAV} />
 
@@ -329,15 +354,30 @@ export default function ApplePage() {
           </div>
 
           <div className="ap-wide">
-            <div className="ap-hero-media ap-rise ap-rise-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/src/villa-terrace-dusk.jpg"
-                alt="Modern villa at dusk with a lit infinity pool and warm interior lighting behind full-height glazing"
-                width={1536}
-                height={1024}
-              />
-            </div>
+            <Parallax className="ap-hero-parallax" distance={-30}>
+              <div className="ap-hero-media ap-rise ap-rise-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/src/villa-terrace-dusk.jpg"
+                  alt="Modern villa at dusk with a lit infinity pool and warm interior lighting behind full-height glazing"
+                  width={1536}
+                  height={1024}
+                />
+                <span className="ap-scan" aria-hidden />
+
+                {/* Labelled a preview, not a live readout — this is a
+                    photograph of a scene, and the interactive demo is a
+                    separate, explicitly-simulated thing further down. */}
+                <div className="ap-hero-hud" aria-hidden>
+                  <span className="ap-hud-chip">
+                    <i className="ap-live" />
+                    Scene preview
+                  </span>
+                  <span className="ap-hud-chip">Lighting · Climate · Security</span>
+                  <span className="ap-hud-chip">One KNX bus</span>
+                </div>
+              </div>
+            </Parallax>
           </div>
         </section>
 
@@ -347,33 +387,22 @@ export default function ApplePage() {
             <p className="ap-small" style={{ marginBottom: 4 }}>
               Certified interoperability — we work with the hardware you trust
             </p>
-            <div className="ap-partners">
-              {[
-                "Schneider Electric",
-                "KNX",
-                "GM Modular",
-                "CP Plus",
-                "Hikvision",
-                "Ajax Systems",
-                "DALI",
-                "Honeywell",
-                "Yale",
-                "ZKTeco",
-                "HomeMate",
-                "Sonoff",
-              ].map((p) => (
+            <Marquee
+              className="ap-partners-marquee"
+              speed={54}
+              items={PARTNERS.map((p) => (
                 <span key={p} className="ap-partner">
                   {p}
                 </span>
               ))}
-            </div>
+            />
           </div>
         </section>
 
         {/* ── Services ──────────────────────────────────────────────── */}
         <section className="ap-section-lg" id="services">
           <div className="ap-wrap">
-            <div className="ap-center">
+            <Reveal className="ap-center">
               <span className="ap-eyebrow">Our capabilities</span>
               <h2 className="ap-h2">
                 Everything your home needs.
@@ -384,16 +413,21 @@ export default function ApplePage() {
                 From a single wireless switch to a fully wired KNX villa — we design,
                 install, program and support every system we sell.
               </p>
-            </div>
+            </Reveal>
 
             <div className="ap-grid">
               {SERVICES.map((s, i) => {
                 const Icon = s.icon;
                 return (
-                  <article
+                  <TiltCard
                     key={s.title}
+                    index={i}
                     className={`ap-card ${i % 2 === 1 ? "ap-alt" : ""}`}
-                    style={i % 2 === 1 ? { background: "#f5f5f7" } : undefined}
+                    glow={
+                      i % 2 === 1
+                        ? "rgba(130, 201, 30, 0.18)"
+                        : "rgba(0, 168, 232, 0.16)"
+                    }
                   >
                     <span className="ap-card-icon">
                       <Icon aria-hidden />
@@ -411,7 +445,7 @@ export default function ApplePage() {
                     <a className="ap-link" href="#contact">
                       Get a quote <ArrowRight />
                     </a>
-                  </article>
+                  </TiltCard>
                 );
               })}
             </div>
@@ -421,7 +455,7 @@ export default function ApplePage() {
         {/* ── KNX interactive demo ──────────────────────────────────── */}
         <section className="ap-section-lg ap-dark" id="demo">
           <div className="ap-wide">
-            <div className="ap-center">
+            <Reveal className="ap-center">
               <span className="ap-eyebrow">Live interactive demonstration</span>
               <h2 className="ap-h2">
                 See how <span className="ap-grad">KNX actually behaves.</span>
@@ -430,9 +464,11 @@ export default function ApplePage() {
                 Tap a room to switch its lighting, or choose a scene and watch every
                 system respond together — exactly as it would on a real KNX bus.
               </p>
-            </div>
+            </Reveal>
 
-            <KnxDemo />
+            <Reveal y={30}>
+              <KnxDemo />
+            </Reveal>
 
             <div className="ap-hardware">
               <p className="ap-hardware-note">
@@ -443,15 +479,15 @@ export default function ApplePage() {
               </p>
 
               <ul className="ap-hardware-rail">
-                {HARDWARE.map((h) => (
-                  <li key={h.title} className="ap-hardware-item">
+                {HARDWARE.map((h, i) => (
+                  <Reveal as="li" key={h.title} index={i} className="ap-hardware-item">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={h.src} alt={h.alt} width={900} height={600} loading="lazy" />
                     <div className="ap-hardware-caption">
                       <span className="ap-hardware-title">{h.title}</span>
                       <span className="ap-hardware-body">{h.body}</span>
                     </div>
-                  </li>
+                  </Reveal>
                 ))}
               </ul>
             </div>
@@ -505,11 +541,20 @@ export default function ApplePage() {
             </div>
 
             <ul className="ap-stats" style={{ marginTop: 96 }}>
-              {STATS.map((s) => (
-                <li key={s.label}>
-                  <span className="ap-stat-value">{s.value}</span>
+              {STATS.map((s, i) => (
+                <Reveal as="li" key={s.label} index={i}>
+                  <span className="ap-stat-value">
+                    {s.to !== undefined ? (
+                      <CountUp to={s.to} suffix={s.suffix ?? ""} />
+                    ) : (
+                      s.text
+                    )}
+                  </span>
                   <span className="ap-stat-label">{s.label}</span>
-                </li>
+                  <span className="ap-stat-bar" aria-hidden>
+                    <i />
+                  </span>
+                </Reveal>
               ))}
             </ul>
           </div>
@@ -519,7 +564,7 @@ export default function ApplePage() {
         {/* ── Spaces ────────────────────────────────────────────────── */}
         <section className="ap-section-lg ap-dark" id="spaces">
           <div className="ap-wide">
-            <div className="ap-center">
+            <Reveal className="ap-center">
               <span className="ap-eyebrow">Spaces</span>
               <h2 className="ap-h2">
                 Designed around
@@ -531,7 +576,7 @@ export default function ApplePage() {
                 morning light, cinema dark, garden at dusk. Flip through, then drag the
                 gallery.
               </p>
-            </div>
+            </Reveal>
 
             <div className="ap-spaces">
               <div className="ap-spaces-flip">
@@ -600,19 +645,19 @@ export default function ApplePage() {
 
         <section className="ap-section" id="process">
           <div className="ap-wrap">
-            <div className="ap-center">
+            <Reveal className="ap-center">
               <span className="ap-eyebrow">How we work</span>
               <h2 className="ap-h2">Four steps, no surprises.</h2>
-            </div>
+            </Reveal>
 
             <div className="ap-process">
               <ol className="ap-steps">
-                {PROCESS.map((p) => (
-                  <li key={p.n} className="ap-step">
-                    <span className="ap-step-num">{p.n}</span>
-                    <h4 className="ap-h4">{p.title}</h4>
-                    <p>{p.body}</p>
-                  </li>
+                {PROCESS.map((p, i) => (
+                  <Reveal as="li" key={p.n} index={i} className="ap-step">
+                  <span className="ap-step-num">{p.n}</span>
+                  <h4 className="ap-h4">{p.title}</h4>
+                  <p>{p.body}</p>
+                </Reveal>
                 ))}
               </ol>
 
@@ -633,18 +678,18 @@ export default function ApplePage() {
         {/* ── Reviews ───────────────────────────────────────────────── */}
         <section className="ap-section-lg ap-alt" id="reviews">
           <div className="ap-wrap">
-            <div className="ap-center">
+            <Reveal className="ap-center">
               <span className="ap-eyebrow">Client experiences</span>
               <h2 className="ap-h2">Homes we&apos;ve already done.</h2>
               <p className="ap-lead" style={{ marginTop: 22 }}>
                 Real reviews from homeowners and business owners across Hosur and
                 Bengaluru.
               </p>
-            </div>
+            </Reveal>
 
             <div className="ap-quotes">
-              {REVIEWS.map((r) => (
-                <figure key={r.name} className="ap-quote">
+              {REVIEWS.map((r, i) => (
+                <Reveal as="figure" key={r.name} index={i} className="ap-quote">
                   <span className="ap-quote-mark" aria-hidden>
                     &ldquo;
                   </span>
@@ -660,7 +705,7 @@ export default function ApplePage() {
                       <small>{r.place}</small>
                     </span>
                   </figcaption>
-                </figure>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -734,7 +779,9 @@ export default function ApplePage() {
                 </p>
               </div>
 
-              <ContactForm />
+              <Reveal y={26}>
+                <ContactForm />
+              </Reveal>
             </div>
           </div>
         </section>
