@@ -28,6 +28,7 @@ import Marquee from "@/components/motion/Marquee";
 import Parallax from "@/components/motion/Parallax";
 import Reveal from "@/components/motion/Reveal";
 import ScrollProgress from "@/components/motion/ScrollProgress";
+import SmartConsole from "@/components/console/SmartConsole";
 import TiltCard from "@/components/motion/TiltCard";
 import RoundCarousel from "@/components/RoundCarousel";
 import KnxDemo from "@/components/KnxDemo";
@@ -52,6 +53,7 @@ export const metadata: Metadata = {
 // page, so it has to be listed first.
 const NAV = [
   { label: "Services", href: "#services" },
+  { label: "Control", href: "#control" },
   { label: "KNX Demo", href: "#demo" },
   { label: "Why KNX", href: "#why" },
   { label: "Spaces", href: "#spaces" },
@@ -338,9 +340,9 @@ export default function ApplePage() {
                   <ArrowRight size={17} />
                 </span>
               </a>
-              <a className="ap-btn ap-btn-ghost ap-btn-lg" href="#demo">
+              <a className="ap-btn ap-btn-ghost ap-btn-lg" href="#control">
                 <span className="ap-play" aria-hidden />
-                Try the live KNX demo
+                Control the villa
               </a>
             </div>
 
@@ -459,6 +461,28 @@ export default function ApplePage() {
         </section>
 
         {/* ── KNX interactive demo ──────────────────────────────────── */}
+        {/* ── Interactive console ───────────────────────────────────── */}
+        <section className="ap-section-lg ap-dark" id="control">
+          <div className="ap-wide">
+            <Reveal className="ap-center">
+              <span className="ap-eyebrow">Live console</span>
+              <h2 className="ap-h2">
+                Every system.{" "}
+                <span className="ap-grad">One screen.</span>
+              </h2>
+              <p className="ap-lead" style={{ marginTop: 22 }}>
+                Lights, climate, curtains, security, cameras, the car and the
+                front door — all of it from one place, and all of it responding
+                right now.
+              </p>
+            </Reveal>
+
+            <Reveal y={30}>
+              <SmartConsole />
+            </Reveal>
+          </div>
+        </section>
+
         <section className="ap-section-lg ap-dark" id="demo">
           <div className="ap-wide">
             <Reveal className="ap-center">

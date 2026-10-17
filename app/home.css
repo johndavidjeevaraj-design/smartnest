@@ -2424,3 +2424,683 @@ html { scroll-padding-top: 66px; }
   .ap-btn-arrow,
   .ap-play { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   SMART-HOME CONSOLE
+   A device rail, a live villa, and a control panel that all read from one
+   state object. Styled as instrumentation rather than marketing: mono
+   labels, thin rules, a single hairline of brand colour per row.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.sc {
+  border-radius: var(--ap-radius-lg);
+  border: 1px solid var(--ap-line-dark);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(0, 168, 232, 0.13), transparent 62%),
+    #0a0f18;
+  overflow: hidden;
+}
+
+/* ── header ── */
+
+.sc-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding: 30px 32px 26px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.sc-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+
+.sc-live i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ap-green);
+  animation: ap-pulse 2.4s ease-out infinite;
+}
+
+.sc-title {
+  margin: 12px 0 8px;
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ap-text-invert);
+}
+
+.sc-sub {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ap-text-invert-2);
+}
+
+.sc-scenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sc-scenes button {
+  padding: 9px 16px;
+  border-radius: var(--ap-radius-full);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ap-text-invert-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.sc-scenes button:hover {
+  border-color: rgba(0, 168, 232, 0.5);
+  color: var(--ap-text-invert);
+}
+
+.sc-scenes button.is-active {
+  border-color: transparent;
+  background: var(--ap-gradient-rev);
+  color: #fff;
+}
+
+/* ── body: rail · stage · panel ── */
+
+.sc-body {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) 300px;
+}
+
+.sc-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
+  border-right: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.sc-rail button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ap-text-invert-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.18s, color 0.18s;
+}
+
+.sc-rail button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ap-text-invert);
+}
+
+.sc-rail button.is-active {
+  background: rgba(0, 168, 232, 0.14);
+  color: #7fdcff;
+  box-shadow: inset 2px 0 0 var(--ap-accent);
+}
+
+/* ── the villa ── */
+
+.sc-stage {
+  position: relative;
+  overflow: hidden;
+  background: #060a12;
+  isolation: isolate;
+}
+
+.sc-stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: brightness(0.66) saturate(0.62);
+}
+
+.sc-night {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 90% at 50% -8%, rgba(10, 26, 58, 0.4), transparent 62%),
+    linear-gradient(to bottom, rgba(8, 14, 30, 0.24), transparent 52%, rgba(8, 14, 30, 0.3));
+}
+
+/* Each room's light: the bright original revealed through a soft mask. */
+.sc-room-light {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: url("/images/smartnest-villa.jpg");
+  background-size: 100% 100%;
+  filter: brightness(1.34) saturate(1.24) sepia(0.22) hue-rotate(-8deg);
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--rw) var(--rh) at var(--cx) var(--cy),
+    #000 22%,
+    rgba(0, 0, 0, 0.72) 52%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse var(--rw) var(--rh) at var(--cx) var(--cy),
+    #000 22%,
+    rgba(0, 0, 0, 0.72) 52%,
+    transparent 78%
+  );
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Curtains draw in from the right across the glazing. */
+.sc-curtain {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(to left, rgba(4, 7, 13, 0.94), rgba(4, 7, 13, 0.72) 70%, transparent);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Armed perimeter. */
+.sc-perimeter {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 0 2px rgba(0, 168, 232, 0.5), inset 0 0 56px rgba(0, 168, 232, 0.28);
+  transition: opacity 0.45s ease;
+}
+.sc-perimeter[data-armed="true"] {
+  opacity: 1;
+  animation: sc-sweep 3.4s linear infinite;
+}
+@keyframes sc-sweep {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(0, 168, 232, 0.5), inset 0 0 56px rgba(0, 168, 232, 0.24); }
+  50%      { box-shadow: inset 0 0 0 2px rgba(0, 168, 232, 0.85), inset 0 0 76px rgba(0, 168, 232, 0.4); }
+}
+
+/* Charging cable pulse near the car port. */
+.sc-ev-cable {
+  position: absolute;
+  left: 72%;
+  bottom: 12%;
+  z-index: 4;
+  width: 90px;
+  height: 90px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(130, 201, 30, 0.65), transparent 68%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.sc-ev-cable[data-charging="true"] {
+  opacity: 1;
+  animation: sc-charge 2.2s ease-in-out infinite;
+}
+@keyframes sc-charge {
+  0%, 100% { transform: scale(0.85); opacity: 0.35; }
+  50%      { transform: scale(1.12); opacity: 0.85; }
+}
+
+/* Front door glow when unlocked. */
+.sc-door {
+  position: absolute;
+  left: 52%;
+  top: 66%;
+  z-index: 4;
+  width: 70px;
+  height: 70px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 148, 0.75), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.sc-door[data-open="true"] { opacity: 1; animation: sc-door 2.6s ease-in-out infinite; }
+@keyframes sc-door {
+  0%, 100% { transform: scale(0.92); }
+  50%      { transform: scale(1.1); }
+}
+
+.sc-stage-bar {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sc-stage-chip {
+  padding: 5px 10px;
+  border-radius: var(--ap-radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(6, 10, 18, 0.74);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sc-stage-chip.is-on {
+  border-color: rgba(130, 201, 30, 0.5);
+  color: #bdf07a;
+}
+
+/* ── control panel ── */
+
+.sc-panel {
+  padding: 18px 20px 24px;
+  border-left: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sc-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+.sc-panel-head span {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ap-text-invert);
+}
+.sc-panel-head small {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+
+:is(.sc-panel, .sc-scenes, .sc-rail) button:focus-visible {
+  outline: 2px solid var(--ap-accent);
+  outline-offset: 2px;
+}
+
+/* lights */
+
+.sc-room-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.sc-room {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ap-text-invert-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.18s, background-color 0.18s, color 0.18s;
+}
+.sc-room:hover { border-color: rgba(0, 168, 232, 0.4); }
+.sc-room-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.4);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.sc-room.is-on {
+  border-color: rgba(130, 201, 30, 0.45);
+  background: rgba(130, 201, 30, 0.1);
+  color: #d9f5b0;
+}
+.sc-room.is-on .sc-room-dot {
+  background: var(--ap-green);
+  box-shadow: 0 0 9px rgba(130, 201, 30, 0.8);
+}
+
+/* shared bits */
+
+.sc-slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 18px 0 9px;
+  font-size: 12px;
+  color: var(--ap-text-invert-2);
+}
+.sc-slider-row strong { color: var(--ap-text-invert); font-weight: 600; }
+
+.sc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--ap-accent) var(--fill, 50%), rgba(148, 163, 184, 0.22) var(--fill, 50%));
+  cursor: pointer;
+}
+.sc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
+}
+.sc-range::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.sc-note {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ap-text-invert-2);
+}
+
+.sc-btn-wide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--ap-radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.12s;
+}
+.sc-btn-wide.is-primary { background: var(--ap-gradient-rev); color: #fff; }
+.sc-btn-wide.is-danger {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ff9d95;
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.4);
+}
+.sc-btn-wide:hover { filter: brightness(1.08); }
+.sc-btn-wide:active { transform: scale(0.985); }
+
+/* thermostat */
+
+.sc-thermo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 0 6px;
+}
+.sc-thermo button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ap-text-invert);
+  cursor: pointer;
+  transition: border-color 0.18s, background-color 0.18s;
+}
+.sc-thermo button:hover {
+  border-color: var(--ap-accent);
+  background: rgba(0, 168, 232, 0.12);
+}
+.sc-thermo-read { text-align: center; }
+.sc-thermo-value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ap-text-invert);
+}
+.sc-thermo-mode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+
+/* segmented control */
+
+.sc-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.sc-seg button {
+  padding: 9px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ap-text-invert-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.18s, background-color 0.18s, color 0.18s;
+}
+.sc-seg button.is-active {
+  border-color: transparent;
+  background: var(--ap-accent-soft);
+  color: #7fdcff;
+  box-shadow: inset 0 0 0 1px rgba(0, 168, 232, 0.4);
+}
+
+/* security */
+
+.sc-arm {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+}
+.sc-arm.is-armed {
+  border-color: rgba(130, 201, 30, 0.45);
+  background: rgba(130, 201, 30, 0.08);
+}
+.sc-arm-icon { color: var(--ap-text-invert-2); }
+.sc-arm.is-armed .sc-arm-icon { color: var(--ap-green); }
+.sc-arm strong { display: block; font-size: 13px; color: var(--ap-text-invert); }
+.sc-arm small { font-size: 11.5px; line-height: 1.5; color: var(--ap-text-invert-2); }
+
+.sc-zones {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-zones li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  font-size: 12px;
+  color: var(--ap-text-invert-2);
+}
+.sc-zones li:last-child { border-bottom: 0; }
+.sc-zones em {
+  font-style: normal;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.6);
+}
+.sc-zones em.is-live { color: #a4e34a; }
+
+/* cameras */
+
+.sc-cams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sc-cam {
+  position: relative;
+  padding: 12px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 168, 232, 0.05) 0 1px, transparent 1px 4px),
+    #0a1120;
+  color: var(--ap-text-invert-2);
+  overflow: hidden;
+}
+.sc-cam-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  color: #a4e34a;
+}
+.sc-cam-live i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ap-green);
+  animation: ap-pulse 2s ease-out infinite;
+}
+.sc-cam-icon { display: block; margin: 10px 0 6px; color: #4fd4f5; }
+.sc-cam-label { display: block; font-size: 11.5px; font-weight: 600; color: var(--ap-text-invert); }
+.sc-cam small { font-size: 10px; }
+
+/* EV */
+
+.sc-ev {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0 4px;
+}
+.sc-ev-ring {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--ap-green) var(--pct), rgba(148, 163, 184, 0.16) 0);
+}
+.sc-ev-ring::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: #0a0f18;
+}
+.sc-ev-ring strong {
+  position: relative;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  color: var(--ap-text-invert);
+}
+.sc-ev-meta strong { display: block; font-size: 13px; color: var(--ap-text-invert); }
+.sc-ev-meta small { font-size: 11.5px; line-height: 1.5; color: var(--ap-text-invert-2); }
+
+/* intercom */
+
+.sc-visor {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+}
+.sc-visor.is-open {
+  border-color: rgba(255, 214, 148, 0.5);
+  background: rgba(255, 214, 148, 0.08);
+}
+.sc-visor-icon { color: var(--ap-text-invert-2); }
+.sc-visor.is-open .sc-visor-icon { color: #ffd694; }
+.sc-visor strong { display: block; font-size: 13px; color: var(--ap-text-invert); }
+.sc-visor small { font-size: 11.5px; line-height: 1.5; color: var(--ap-text-invert-2); }
+
+/* ── responsive ── */
+
+@media (max-width: 1080px) {
+  .sc-body { grid-template-columns: 116px minmax(0, 1fr); }
+  .sc-panel {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+  }
+}
+
+@media (max-width: 760px) {
+  .sc-head { padding: 22px 18px 18px; }
+  .sc-body { grid-template-columns: 1fr; }
+
+  /* The rail becomes a horizontal strip that scrolls rather than a
+     three-row column that pushes the villa off screen. */
+  .sc-rail {
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    padding: 10px;
+    scrollbar-width: none;
+  }
+  .sc-rail::-webkit-scrollbar { display: none; }
+  .sc-rail button { flex: 0 0 auto; white-space: nowrap; }
+  .sc-rail button.is-active { box-shadow: inset 0 -2px 0 var(--ap-accent); }
+
+  .sc-panel { padding: 16px; }
+  .sc-stage-bar { position: static; padding: 10px; background: #0a0f18; }
+  .sc-ev-ring { width: 76px; height: 76px; flex-basis: 76px; }
+  .sc-thermo-value { font-size: 34px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-perimeter[data-armed="true"],
+  .sc-ev-cable[data-charging="true"],
+  .sc-door[data-open="true"],
+  .sc-live i,
+  .sc-cam-live i { animation: none; }
+  .sc-curtain, .sc-room-light { transition: none; }
+}
