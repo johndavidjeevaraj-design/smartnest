@@ -96,16 +96,22 @@ export default function TourClient() {
 
   // The cinematic entry shows once per session, not on every internal click.
   useEffect(() => {
+    let seen = false;
     try {
-      if (!sessionStorage.getItem("sn-intro")) {
-        setIntro(true);
-        sessionStorage.setItem("sn-intro", "1");
-      }
+      seen = sessionStorage.getItem("sn-intro") === "1";
+      sessionStorage.setItem("sn-intro", "1");
     } catch {
-      /* private mode — skip the intro */
+      /* private mode — the intro simply shows again */
     }
+    // first paint stays deterministic; the curtain lifts on the next frame
+    const raf = requestAnimationFrame(() => {
+      if (!seen) setIntro(true);
+    });
     const t = setTimeout(() => setHint(false), 8000);
-    return () => clearTimeout(t);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+    };
   }, []);
 
   const goChapter = useCallback((i: number) => {
@@ -348,6 +354,30 @@ export default function TourClient() {
           </p>
         )}
       </aside>
+
+      {chapter === VIEWS.length - 1 && (
+      <div className="vt-cta">
+        <p className="vt-cta-k">Make your home intelligent</p>
+        <p className="vt-cta-l">
+          Discover how SmartNest KNX automation can transform your living spaces.
+        </p>
+        <div className="vt-cta-actions">
+          <Link href="/#contact" className="vt-cta-solid">
+            Book a consultation
+          </Link>
+          <a
+            className="vt-cta-wa"
+            href={"https://wa.me/916384079529?text=" + encodeURIComponent(
+              "Hello SmartNest! I walked through the 3D villa and would like to know more about KNX.",
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Enquire on WhatsApp
+          </a>
+        </div>
+      </div>
+      )}
 
       <div className={`vt-hint ${hint ? "" : "is-gone"}`}>
         Drag to look around · click a room to switch its light · keys 1–6
