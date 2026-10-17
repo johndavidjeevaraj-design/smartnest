@@ -1,0 +1,592 @@
+/* ─────────────────────────────────────────────────────────────
+   /tour — the 3D villa walkthrough
+   Full-bleed canvas with a thin instrument overlay.
+   ───────────────────────────────────────────────────────────── */
+
+.vt-root {
+  --vt-bg: #070b12;
+  --vt-line: rgba(255, 255, 255, 0.09);
+  --vt-ink: #eef2f8;
+  --vt-dim: #93a1b5;
+  --vt-green: #a4e34a;
+  --vt-cyan: #4fd4f5;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--vt-bg);
+  color: var(--vt-ink);
+  font-family: var(--ap-font, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+.vt-canvas {
+  position: absolute;
+  inset: 0;
+}
+.vt-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* ── top bar ───────────────────────────────────────────────── */
+.vt-top {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 26px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(7, 11, 18, 0.72), rgba(7, 11, 18, 0));
+}
+.vt-brand,
+.vt-exit,
+.vt-seg button,
+.vt-chapters button,
+.vt-panel button {
+  pointer-events: auto;
+}
+
+.vt-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vt-ink);
+  text-decoration: none;
+}
+.vt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vt-green);
+  box-shadow: 0 0 10px var(--vt-green);
+}
+.vt-brand-sep {
+  color: rgba(255, 255, 255, 0.28);
+  font-weight: 400;
+}
+.vt-brand-sub {
+  color: var(--vt-dim);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+
+.vt-top-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vt-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--vt-line);
+  backdrop-filter: blur(12px);
+}
+.vt-seg button {
+  border: 0;
+  background: none;
+  color: var(--vt-dim);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.25s, background 0.25s;
+}
+.vt-seg button:hover {
+  color: var(--vt-ink);
+}
+.vt-seg button.is-on {
+  color: #06120a;
+  background: var(--vt-green);
+}
+
+.vt-exit {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vt-dim);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--vt-line);
+  transition: color 0.25s, border-color 0.25s;
+}
+.vt-exit:hover {
+  color: var(--vt-ink);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── chapters ──────────────────────────────────────────────── */
+.vt-chapters {
+  position: absolute;
+  z-index: 6;
+  left: 26px;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.vt-chapters button {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--vt-dim);
+  padding: 7px 0;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.3s;
+}
+.vt-chapters button:hover {
+  color: var(--vt-ink);
+}
+.vt-ch-n {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.32);
+  transition: color 0.3s;
+}
+.vt-ch-l {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.vt-chapters button.is-on {
+  color: var(--vt-ink);
+}
+.vt-chapters button.is-on .vt-ch-n {
+  color: var(--vt-green);
+}
+.vt-chapters button.is-on .vt-ch-l {
+  color: #fff;
+}
+.vt-chapters button.is-on .vt-ch-l::after {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  margin-left: 9px;
+  vertical-align: middle;
+  background: var(--vt-green);
+}
+
+/* ── caption ───────────────────────────────────────────────── */
+.vt-caption::before {
+  content: "";
+  position: absolute;
+  inset: -46px -70px -46px -70px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    118% 96% at 12% 82%,
+    rgba(5, 8, 14, 0.94) 0%,
+    rgba(5, 8, 14, 0.78) 38%,
+    rgba(5, 8, 14, 0) 74%
+  );
+}
+.vt-caption {
+  position: absolute;
+  z-index: 6;
+  left: 26px;
+  bottom: 34px;
+  max-width: 390px;
+  pointer-events: none;
+  animation: vt-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.vt-caption h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  color: #fff;
+  text-wrap: balance;
+}
+.vt-caption p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--vt-dim);
+  max-width: 34ch;
+}
+@keyframes vt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── systems panel ─────────────────────────────────────────── */
+.vt-panel {
+  position: absolute;
+  z-index: 6;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 214px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--vt-line);
+  background: rgba(10, 15, 23, 0.72);
+  backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+}
+.vt-panel-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vt-dim);
+  padding: 0 4px 11px;
+}
+.vt-panel-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.vt-panel-live i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+.vt-panel-live i.is-on {
+  background: var(--vt-green);
+  box-shadow: 0 0 8px var(--vt-green);
+}
+
+.vt-rooms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.vt-rooms button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  font: inherit;
+  color: var(--vt-dim);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.25s, color 0.25s;
+}
+.vt-rooms button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--vt-ink);
+}
+.vt-bulb {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.16);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.vt-room-l {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.vt-room-f {
+  margin-left: auto;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.24);
+}
+.vt-rooms button.is-on {
+  color: #fff;
+}
+.vt-rooms button.is-on .vt-bulb {
+  background: var(--vt-green);
+  box-shadow: 0 0 9px var(--vt-green);
+}
+
+.vt-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--vt-line);
+}
+.vt-switches button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--vt-dim);
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
+}
+.vt-switches button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.vt-switches b {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.34);
+  transition: color 0.3s;
+}
+.vt-switches button.is-on {
+  color: #fff;
+}
+.vt-switches button.is-on b {
+  color: var(--vt-cyan);
+}
+
+/* ── hint ──────────────────────────────────────────────────── */
+.vt-hint {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--vt-line);
+  background: rgba(10, 15, 23, 0.62);
+  backdrop-filter: blur(12px);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--vt-dim);
+  pointer-events: none;
+  transition: opacity 0.8s;
+}
+.vt-hint.is-gone {
+  opacity: 0;
+}
+
+/* ── loader ────────────────────────────────────────────────── */
+.vt-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  background: var(--vt-bg);
+  transition: opacity 0.5s;
+}
+.vt-loader-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.vt-loader-k {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vt-dim);
+}
+.vt-loader-bar {
+  width: 150px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.vt-loader-bar i {
+  display: block;
+  height: 100%;
+  background: var(--vt-green);
+  transition: width 0.3s;
+}
+.vt-loader-n {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── no-WebGL ──────────────────────────────────────────────── */
+.vt-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  place-items: center;
+  text-align: center;
+  padding: 40px;
+  font-size: 15px;
+  color: var(--vt-dim);
+  background: var(--vt-bg);
+}
+.vt-root.is-nogl .vt-fallback {
+  display: grid;
+}
+.vt-root.is-nogl .vt-canvas {
+  display: none;
+}
+
+/* ── responsive ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .vt-top {
+    padding: 14px 16px;
+  }
+  .vt-brand-sub,
+  .vt-brand-sep {
+    display: none;
+  }
+  .vt-seg button {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+  .vt-exit {
+    padding: 6px 11px;
+    font-size: 10px;
+  }
+
+  .vt-chapters {
+    left: 16px;
+    right: 16px;
+    top: 66px;
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .vt-chapters::-webkit-scrollbar {
+    display: none;
+  }
+  .vt-chapters button {
+    flex: 0 0 auto;
+    padding: 6px 9px;
+    border-radius: 8px;
+    background: rgba(10, 15, 23, 0.5);
+    border: 1px solid var(--vt-line);
+    gap: 6px;
+  }
+  .vt-chapters button.is-on .vt-ch-l::after {
+    display: none;
+  }
+  .vt-ch-n {
+    font-size: 9px;
+  }
+  .vt-ch-l {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .vt-panel {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 12px;
+    width: auto;
+    transform: none;
+    padding: 10px;
+    border-radius: 14px;
+  }
+  .vt-rooms {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .vt-rooms button {
+    padding: 7px 6px;
+  }
+  .vt-room-l {
+    font-size: 11px;
+  }
+  .vt-room-f {
+    display: none;
+  }
+  .vt-switches {
+    flex-direction: row;
+    gap: 2px;
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  .vt-switches button {
+    flex: 1;
+  }
+
+  .vt-caption {
+    left: 16px;
+    right: 16px;
+    bottom: 244px;
+    max-width: none;
+  }
+  .vt-caption h1 {
+    font-size: 25px;
+  }
+  .vt-caption p {
+    font-size: 12.5px;
+    max-width: none;
+  }
+  .vt-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 460px) {
+  .vt-exit {
+    padding: 6px 9px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .vt-seg button {
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 420px) {
+  .vt-rooms {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .vt-caption {
+    bottom: 276px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vt-caption,
+  .vt-loader,
+  .vt-hint {
+    animation: none;
+    transition: none;
+  }
+}

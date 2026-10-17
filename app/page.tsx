@@ -344,6 +344,10 @@ export default function ApplePage() {
                 <span className="ap-play" aria-hidden />
                 Control the villa
               </a>
+              <a className="ap-hero-tour" href="/tour">
+                Walk through it in 3D
+                <span aria-hidden>→</span>
+              </a>
             </div>
 
             <div className="ap-hero-badges ap-rise ap-rise-4">
