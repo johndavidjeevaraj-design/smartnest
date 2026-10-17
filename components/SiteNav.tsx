@@ -119,7 +119,7 @@ export default function SiteNav({ links }: { links: NavLink[] }) {
 
         <a className="ap-nav-tour" href="/tour">
           <span className="ap-nav-tour-dot" aria-hidden />
-          3D tour
+          KNX Walkthrough
         </a>
 
         <a className="ap-nav-cta" href="#contact">
@@ -157,7 +157,7 @@ export default function SiteNav({ links }: { links: NavLink[] }) {
           </nav>
 
           <a className="ap-mobile-tour" href="/tour" onClick={() => setOpen(false)}>
-            Walk the villa in 3D
+            Enter the KNX Walkthrough
           </a>
 
           <a

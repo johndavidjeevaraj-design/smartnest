@@ -28,10 +28,8 @@ import Marquee from "@/components/motion/Marquee";
 import Parallax from "@/components/motion/Parallax";
 import Reveal from "@/components/motion/Reveal";
 import ScrollProgress from "@/components/motion/ScrollProgress";
-import SmartConsole from "@/components/console/SmartConsole";
 import TiltCard from "@/components/motion/TiltCard";
 import RoundCarousel from "@/components/RoundCarousel";
-import KnxDemo from "@/components/KnxDemo";
 import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
@@ -53,8 +51,6 @@ export const metadata: Metadata = {
 // page, so it has to be listed first.
 const NAV = [
   { label: "Services", href: "#services" },
-  { label: "Control", href: "#control" },
-  { label: "KNX Demo", href: "#demo" },
   { label: "Why KNX", href: "#why" },
   { label: "Spaces", href: "#spaces" },
   { label: "Process", href: "#process" },
@@ -340,13 +336,9 @@ export default function ApplePage() {
                   <ArrowRight size={17} />
                 </span>
               </a>
-              <a className="ap-btn ap-btn-ghost ap-btn-lg" href="#control">
+              <a className="ap-btn ap-btn-ghost ap-btn-lg" href="/tour">
                 <span className="ap-play" aria-hidden />
-                Control the villa
-              </a>
-              <a className="ap-hero-tour" href="/tour">
-                Walk through it in 3D
-                <span aria-hidden>→</span>
+                KNX Walkthrough
               </a>
             </div>
 
@@ -465,48 +457,38 @@ export default function ApplePage() {
         </section>
 
         {/* ── KNX interactive demo ──────────────────────────────────── */}
-        {/* ── Interactive console ───────────────────────────────────── */}
-        <section className="ap-section-lg ap-dark" id="control">
-          <div className="ap-wide">
-            <Reveal className="ap-center">
-              <span className="ap-eyebrow">Live console</span>
-              <h2 className="ap-h2">
-                Every system.{" "}
-                <span className="ap-grad">One screen.</span>
-              </h2>
-              <p className="ap-lead" style={{ marginTop: 22 }}>
-                Lights, climate, curtains, security, cameras, the car and the
-                front door — all of it from one place, and all of it responding
-                right now.
-              </p>
-            </Reveal>
-
-            <Reveal y={30}>
-              <SmartConsole />
-            </Reveal>
-          </div>
-        </section>
-
         <section className="ap-section-lg ap-dark" id="demo">
           <div className="ap-wide">
             <Reveal className="ap-center">
-              <span className="ap-eyebrow">Live interactive demonstration</span>
+              <span className="ap-eyebrow">The walkthrough</span>
               <h2 className="ap-h2">
-                See how <span className="ap-grad">KNX actually behaves.</span>
+                Walk the villa.{" "}
+                <span className="ap-grad">Then switch it.</span>
               </h2>
               <p className="ap-lead" style={{ marginTop: 22 }}>
-                Tap a room to switch its lighting, or choose a scene and watch every
-                system respond together — exactly as it would on a real KNX bus.
+                A real three-bedroom villa, modelled to scale and wired the way we
+                wire a house. Open the gate, light a room, close the curtains and
+                watch the building answer.
               </p>
             </Reveal>
 
             <Reveal y={30}>
-              <KnxDemo />
+              <a className="ap-walk-cta" href="/tour">
+                <span className="ap-walk-glow" aria-hidden />
+                <span className="ap-walk-kicker">KNX Walkthrough</span>
+                <span className="ap-walk-title">Step inside the villa</span>
+                <span className="ap-walk-meta">
+                  Six rooms · three bedrooms · gate, curtains and lighting
+                </span>
+                <span className="ap-walk-go" aria-hidden>
+                  →
+                </span>
+              </a>
             </Reveal>
 
             <div className="ap-hardware">
               <p className="ap-hardware-note">
-                The demo above is a simulation. Below is the actual class of hardware
+                The walkthrough is a simulation. This is the actual class of hardware
                 we install — DIN-rail actuators and gateways in the distribution board,
                 certified KNX touch switches on the wall, and keypads, readers and
                 cameras from the 500+ brands the standard supports.

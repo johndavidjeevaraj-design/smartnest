@@ -590,3 +590,338 @@
     transition: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Cinematic entry
+   ───────────────────────────────────────────────────────────── */
+.vt-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(120% 90% at 50% 40%, rgba(7, 11, 18, 0.55), rgba(7, 11, 18, 0.94) 72%);
+  backdrop-filter: blur(3px);
+  animation: vt-fade 0.6s ease both;
+}
+@keyframes vt-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.vt-intro-inner {
+  max-width: 620px;
+  text-align: center;
+  animation: vt-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+.vt-intro-kicker {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+.vt-intro-title {
+  margin: 18px 0 16px;
+  font-size: clamp(32px, 5.4vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  color: #fff;
+  text-wrap: balance;
+}
+.vt-intro-sub {
+  margin: 0 auto 30px;
+  max-width: 44ch;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #a8b6c8;
+}
+.vt-intro-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.vt-intro-primary,
+.vt-intro-ghost {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 26px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.25s, background 0.25s, border-color 0.25s, color 0.25s;
+}
+.vt-intro-primary {
+  border: 0;
+  color: #06120a;
+  background: linear-gradient(100deg, #a4e34a, #57e0b4);
+  box-shadow: 0 12px 34px -14px rgba(164, 227, 74, 0.8);
+}
+.vt-intro-primary:hover {
+  transform: translateY(-2px);
+}
+.vt-intro-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #dfe8f4;
+}
+.vt-intro-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+}
+.vt-intro-note {
+  display: block;
+  margin-top: 22px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Floor plan
+   ───────────────────────────────────────────────────────────── */
+.vt-plan-btn {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #93a1b5;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--vt-line);
+  border-radius: 999px;
+  padding: 8px 15px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 0.25s, border-color 0.25s, background 0.25s;
+}
+.vt-plan-btn:hover {
+  color: #eef2f8;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.vt-plan-btn.is-on {
+  color: #06120a;
+  background: #4fd4f5;
+  border-color: #4fd4f5;
+}
+
+.vt-plan {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  top: 96px;
+  bottom: 40px;
+  width: min(560px, calc(100vw - 48px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 12, 19, 0.97);
+  backdrop-filter: blur(22px) saturate(1.2);
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.95);
+  /* opacity only — a transform here would fight translateX(-50%) */
+  animation: vt-plan-in 0.3s ease both;
+}
+@keyframes vt-plan-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.vt-plan-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.vt-plan-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+.vt-plan-title {
+  margin: 6px 0 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: #fff;
+}
+.vt-plan-x {
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: none;
+  color: #93a1b5;
+  cursor: pointer;
+}
+.vt-plan-x:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.vt-plan-seg {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--vt-line);
+  margin-bottom: 12px;
+}
+.vt-plan-seg button {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #93a1b5;
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.vt-plan-seg button.is-on {
+  color: #06120a;
+  background: #a4e34a;
+}
+.vt-plan-svg {
+  width: 100%;
+  height: auto;
+  max-height: 52vh;
+  flex: 1;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.vt-plan-wall {
+  fill: #5d6a7d;
+}
+.vt-plan-room rect {
+  fill: rgba(0, 168, 232, 0.08);
+  stroke: rgba(79, 212, 245, 0.28);
+  stroke-width: 0.03;
+  cursor: pointer;
+  transition: fill 0.2s, stroke 0.2s;
+}
+.vt-plan-room:hover rect {
+  fill: rgba(79, 212, 245, 0.2);
+  stroke: #4fd4f5;
+}
+.vt-plan-room.is-on rect {
+  fill: rgba(164, 227, 74, 0.24);
+  stroke: #a4e34a;
+}
+.vt-plan-label {
+  fill: #dfe8f4;
+  font-size: 0.38px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.vt-plan-area {
+  fill: rgba(255, 255, 255, 0.38);
+  font-size: 0.3px;
+  pointer-events: none;
+}
+.vt-plan-note {
+  fill: rgba(255, 255, 255, 0.3);
+  font-size: 0.34px;
+  letter-spacing: 0.04em;
+}
+.vt-plan-foot {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  color: #93a1b5;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Scenes strip
+   ───────────────────────────────────────────────────────────── */
+.vt-scenes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--vt-line);
+}
+.vt-scenes button {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.045);
+  color: #93a1b5;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.vt-scenes button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+}
+.vt-scenes button.is-on {
+  color: #06120a;
+  background: #4fd4f5;
+  border-color: #4fd4f5;
+}
+.vt-panel-note {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--vt-line);
+  font-size: 11px;
+  color: #4fd4f5;
+}
+
+@media (max-width: 900px) {
+  .vt-plan {
+    left: 10px;
+    right: 10px;
+    top: 96px;
+    bottom: 10px;
+    width: auto;
+    transform: none;
+    padding: 14px;
+  }
+  .vt-plan-svg {
+    max-height: 46vh;
+  }
+  .vt-plan-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+  .vt-scenes {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .vt-scenes button {
+    font-size: 10px;
+    padding: 7px 3px;
+  }
+}
+
+@media (max-width: 460px) {
+  .vt-plan-btn {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+  .vt-scenes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vt-intro,
+  .vt-intro-inner,
+  .vt-plan {
+    animation: none;
+  }
+}

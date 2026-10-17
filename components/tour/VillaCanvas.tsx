@@ -13,6 +13,7 @@ export default function VillaCanvas({
   time,
   cut,
   view,
+  resetKey,
   onPick,
 }: {
   lights: Record<RoomKey, boolean>;
@@ -21,6 +22,7 @@ export default function VillaCanvas({
   time: TimeKey;
   cut: boolean;
   view: View;
+  resetKey: number;
   onPick: (r: RoomKey) => void;
 }) {
   return (
@@ -38,6 +40,7 @@ export default function VillaCanvas({
           time={time}
           cut={cut}
           view={view}
+          resetKey={resetKey}
           onPick={onPick}
         />
       </Suspense>

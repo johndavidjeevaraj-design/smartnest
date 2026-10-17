@@ -3186,3 +3186,86 @@ html { scroll-padding-top: 66px; }
     transition: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   KNX Walkthrough entry card (replaces the 2D demo)
+   ───────────────────────────────────────────────────────────── */
+
+.ap-walk-cta {
+  position: relative;
+  display: block;
+  margin-top: 46px;
+  padding: 40px 44px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 168, 232, 0.24);
+  background:
+    radial-gradient(120% 160% at 12% 0%, rgba(0, 168, 232, 0.16), transparent 58%),
+    radial-gradient(100% 140% at 96% 100%, rgba(130, 201, 30, 0.12), transparent 60%),
+    rgba(10, 15, 23, 0.72);
+  overflow: hidden;
+  text-decoration: none;
+  transition: border-color 0.35s, transform 0.35s;
+}
+.ap-walk-cta:hover {
+  border-color: rgba(0, 168, 232, 0.55);
+  transform: translateY(-2px);
+}
+.ap-walk-glow {
+  position: absolute;
+  inset: auto -20% -70% auto;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 212, 245, 0.28), transparent 66%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+.ap-walk-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+.ap-walk-title {
+  display: block;
+  margin: 12px 0 8px;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.ap-walk-meta {
+  display: block;
+  font-size: 14px;
+  color: #93a1b5;
+}
+.ap-walk-go {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 26px;
+  color: #4fd4f5;
+  transition: transform 0.35s;
+}
+.ap-walk-cta:hover .ap-walk-go {
+  transform: translate(6px, -50%);
+}
+
+@media (max-width: 720px) {
+  .ap-walk-cta {
+    padding: 28px 24px;
+  }
+  .ap-walk-go {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-walk-cta,
+  .ap-walk-go {
+    transition: none;
+  }
+}

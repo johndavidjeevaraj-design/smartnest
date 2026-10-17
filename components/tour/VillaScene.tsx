@@ -276,7 +276,7 @@ function Exposure({ value }: { value: number }) {
   return null;
 }
 
-function CameraRig({ view, cut }: { view: View; cut: boolean }) {
+function CameraRig({ view, cut, resetKey }: { view: View; cut: boolean; resetKey: number }) {
   const { camera, controls, size } = useThree() as unknown as {
     camera: THREE.PerspectiveCamera;
     size: { width: number; height: number };
@@ -300,7 +300,7 @@ function CameraRig({ view, cut }: { view: View; cut: boolean }) {
     if (controls) {
       controls.enabled = false;
     }
-  }, [view, controls, dolly]);
+  }, [view, controls, dolly, resetKey]);
 
   useFrame((_, dt) => {
     const k = 1 - Math.pow(0.0015, Math.min(dt, 0.05));
@@ -424,6 +424,7 @@ export default function VillaScene({
   time,
   cut,
   view,
+  resetKey,
   onPick,
 }: {
   lights: Record<RoomKey, boolean>;
@@ -432,6 +433,7 @@ export default function VillaScene({
   time: TimeKey;
   cut: boolean;
   view: View;
+  resetKey: number;
   onPick: (r: RoomKey) => void;
 }) {
   const { scene } = useGLTF(MODEL);
@@ -493,7 +495,7 @@ export default function VillaScene({
         cut={cut}
         onPick={onPick}
       />
-      <CameraRig view={view} cut={cut} />
+      <CameraRig view={view} cut={cut} resetKey={resetKey} />
     </>
   );
 }
