@@ -591,16 +591,17 @@
 }
 
 /* Curtain veil across the main glazing */
-/* Curtains genuinely dim the interior. This used to be a left-to-right
-   slab that covered 68% of the villa *permanently* — the --curtains
-   variable was read here but never set anywhere, so it always fell back
-   to its default and the house could never be fully seen. */
+/* Curtains dim the interior. The opacity is computed in React and passed
+   as an inline style — an earlier version asked CSS to calc() it from a
+   custom property, and when that expression failed to parse the opacity
+   silently fell back to 1, dropping an opaque near-black slab over the
+   whole villa. Failing loudly is better than failing to a solid block. */
 .ap-demo-veil {
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
   background: #04080f;
-  opacity: calc((100 - var(--curtains, 68)) * 0.0016);
   transition: opacity 0.5s ease;
 }
 
@@ -2161,64 +2162,96 @@ html { scroll-padding-top: 66px; }
     box-shadow 0.3s ease, background-position 0.45s ease;
 }
 
-/* ── Demo lighting ──────────────────────────────────────────────────────
-   The villa cutaway is a *bright* daylight render (mean luminance ~33%),
-   not a night shot. So the model is inverted from what you would expect:
-   a room that is OFF is covered by a soft shadow, and a room that is ON
-   simply stays at full brightness with a little warm lift.
+/* ── Demo lighting: an unlit building, lit by the program ───────────────
+   The villa arrives dark. The dark base is the photograph itself, pushed
+   down with a filter, and a room that is switched on reveals the bright
+   original through a soft mask over exactly that room. Same photograph
+   underneath, so the light lands on the architecture rather than near
+   it — which is what makes this read as a real installation instead of
+   a coloured blob sitting on top of a picture. */
 
-   An earlier attempt dimmed the whole photograph and added light on top,
-   which is the right instinct for a night photo and the wrong one here —
-   measured change was about 5%, which is why the demo read as inert.
-   Shadows on a bright image are unmissable. */
+.ap-demo-stage { isolation: isolate; }
 
-.ap-demo-veil { display: none; }
-.ap-demo-dark { display: none; }
+.ap-demo-base {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Nothing is switched on yet. */
+  filter: brightness(0.62) saturate(0.55) contrast(1.02);
+}
 
-.ap-room-shade,
-.ap-room-light {
+/* Night air sitting over the unlit building. */
+.ap-demo-night {
   position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* Just enough blue-hour tint to say "evening". Any heavier and the
+     building disappears — and a building you cannot see cannot be lit. */
+  background:
+    radial-gradient(ellipse 130% 95% at 50% -10%, rgba(10, 26, 58, 0.3), transparent 64%),
+    linear-gradient(to bottom, rgba(8, 14, 30, 0.16), transparent 48%, rgba(8, 14, 30, 0.2));
+}
+
+/* One full-stage layer per room, showing the bright original, masked to
+   a soft ellipse over that room only. Full-stage rather than room-sized
+   so the underlying image aligns exactly. */
+.ap-room-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: url("/images/smartnest-villa.jpg");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  filter: brightness(1.32) saturate(1.22) sepia(0.24) hue-rotate(-8deg);
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--rw) var(--rh) at var(--cx) var(--cy),
+    #000 22%,
+    rgba(0, 0, 0, 0.72) 52%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse var(--rw) var(--rh) at var(--cx) var(--cy),
+    #000 22%,
+    rgba(0, 0, 0, 0.72) 52%,
+    transparent 78%
+  );
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
+}
+
+/* The warm bloom each lit room throws, which is what actually reads as
+   "a light was switched on". */
+.ap-room-bloom {
+  position: absolute;
+  z-index: 3;
   transform: translate(-50%, -50%);
   pointer-events: none;
   border-radius: 50%;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* OFF — a soft pool of night sitting over that room and nothing else. */
-.ap-room-shade {
-  z-index: 2;
   background: radial-gradient(
-    ellipse 46% 44% at 50% 50%,
-    rgba(3, 6, 12, 0.95) 0%,
-    rgba(3, 6, 12, 0.9) 34%,
-    rgba(3, 6, 12, 0.62) 58%,
-    transparent 78%
+    ellipse 40% 38% at 50% 50%,
+    rgba(255, 233, 190, 0.55) 0%,
+    rgba(255, 186, 104, 0.26) 44%,
+    transparent 72%
   );
-  filter: blur(13px);
-}
-
-/* ON — a warm lift, screen-blended so it adds light to the render rather
-   than veiling it. Deliberately subtle: the brightness is already there,
-   this just tells the eye the room is lit. */
-.ap-room-light {
-  z-index: 3;
-  background: radial-gradient(
-    ellipse 42% 40% at 50% 50%,
-    rgba(255, 236, 202, 0.5) 0%,
-    rgba(255, 198, 128, 0.26) 46%,
-    transparent 74%
-  );
-  filter: blur(9px);
+  filter: blur(10px);
   mix-blend-mode: screen;
-  will-change: opacity;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.ap-hotspot { z-index: 5; }
+.ap-demo-topbar { z-index: 6; }
+.ap-demo-hint { z-index: 6; }
+.ap-demo-scan { z-index: 4; }
 
 .ap-demo-kw { color: #a4e34a; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ap-room-shade,
-  .ap-room-light { transition: none; }
+  .ap-room-reveal,
+  .ap-room-bloom { transition: none; }
 }
+
 /* The demo now rewards a tap immediately, so the hint has to say so. */
 /* Sits inside the image, so it reads as an instruction printed on the
    stage rather than a caption that could belong to anything. */
@@ -2252,7 +2285,142 @@ html { scroll-padding-top: 66px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ap-demo-dark,
-  .ap-room-light { transition: none; }
+  .ap-demo-night { animation: none; }
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   HERO: centred actions and a headline that moves
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Both calls to action sit centred under the headline. Left-aligned they
+   read as a form footer; centred they read as the two ways in. */
+.ap-hero-actions {
+  justify-content: center;
+  gap: 14px;
+  margin-top: 38px;
+}
+
+.ap-btn-lg {
+  padding: 15px 26px;
+  font-size: 15.5px;
+}
+
+/* The arrow slides on hover instead of the whole button jumping. */
+.ap-btn-arrow {
+  display: inline-flex;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ap-btn-primary:hover .ap-btn-arrow { transform: translateX(4px); }
+
+/* Play triangle on the demo button, so it reads as "this one runs". */
+.ap-play {
+  width: 0;
+  height: 0;
+  margin-right: 1px;
+  border-left: 8px solid currentColor;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ap-btn-ghost:hover .ap-play { transform: scale(1.22); }
+
+/* A sheen that crosses the primary button every few seconds. The hero's
+   main action should be the thing the eye lands on first. */
+.ap-btn-primary { position: relative; overflow: hidden; }
+
+.ap-btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 45%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.34),
+    transparent
+  );
+  transform: skewX(-16deg);
+  animation: ap-sheen 5.5s ease-in-out infinite;
+}
+
+@keyframes ap-sheen {
+  0%, 62%  { left: -60%; }
+  82%,100% { left: 130%; }
+}
+
+.ap-btn-primary > * { position: relative; z-index: 1; }
+
+/* ── The word that carries the headline keeps moving after load ──────── */
+
+.ap-grad {
+  background-size: 220% 100%;
+  animation: ap-hue 11s ease-in-out infinite;
+}
+
+@keyframes ap-hue {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ── Lights coming on across the hero photograph ─────────────────────── */
+
+.ap-hero-pulse {
+  position: absolute;
+  width: 180px;
+  height: 140px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 50% 46% at 50% 50%,
+    rgba(255, 226, 174, 0.5) 0%,
+    rgba(255, 178, 92, 0.22) 48%,
+    transparent 74%
+  );
+  filter: blur(12px);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: ap-pulse-lamp 9s ease-in-out infinite;
+}
+
+.ap-pulse-1 { left: 16%; top: 46%; animation-delay: 0s; }
+.ap-pulse-2 { left: 62%; top: 34%; animation-delay: 3s; }
+.ap-pulse-3 { left: 38%; top: 62%; animation-delay: 6s; }
+
+@keyframes ap-pulse-lamp {
+  0%, 8%   { opacity: 0; transform: scale(0.85); }
+  22%      { opacity: 0.85; transform: scale(1); }
+  46%      { opacity: 0.5; }
+  70%,100% { opacity: 0; transform: scale(1.1); }
+}
+
+/* ── Badges lift in sequence rather than appearing as one grey block ─── */
+
+.ap-hero-badges .ap-badge {
+  transition: color 0.25s ease, border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+.ap-hero-badges .ap-badge:hover {
+  color: var(--ap-text);
+  border-color: rgba(0, 168, 232, 0.42);
+  background: rgba(0, 168, 232, 0.07);
+}
+
+@media (max-width: 620px) {
+  .ap-hero-actions { flex-direction: column; align-items: stretch; }
+  .ap-btn-lg { justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-btn-primary::after,
+  .ap-grad,
+  .ap-hero-pulse {
+    animation: none;
+  }
+  .ap-hero-pulse { display: none; }
+  .ap-btn-arrow,
+  .ap-play { transition: none; }
+}

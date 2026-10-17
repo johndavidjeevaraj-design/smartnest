@@ -332,10 +332,14 @@ export default function ApplePage() {
             </p>
 
             <div className="ap-actions ap-hero-actions ap-rise ap-rise-4">
-              <a className="ap-btn ap-btn-primary" href="#contact">
-                Book a consultation <ArrowRight size={17} />
+              <a className="ap-btn ap-btn-primary ap-btn-lg" href="#contact">
+                Book a consultation
+                <span className="ap-btn-arrow" aria-hidden>
+                  <ArrowRight size={17} />
+                </span>
               </a>
-              <a className="ap-btn ap-btn-ghost" href="#demo">
+              <a className="ap-btn ap-btn-ghost ap-btn-lg" href="#demo">
+                <span className="ap-play" aria-hidden />
                 Try the live KNX demo
               </a>
             </div>
@@ -364,10 +368,12 @@ export default function ApplePage() {
                   height={1024}
                 />
                 <span className="ap-scan" aria-hidden />
+                {/* Lights sweeping across the facade on their own — the
+                    hero should move without being touched. */}
+                <span className="ap-hero-pulse ap-pulse-1" aria-hidden />
+                <span className="ap-hero-pulse ap-pulse-2" aria-hidden />
+                <span className="ap-hero-pulse ap-pulse-3" aria-hidden />
 
-                {/* Labelled a preview, not a live readout — this is a
-                    photograph of a scene, and the interactive demo is a
-                    separate, explicitly-simulated thing further down. */}
                 <div className="ap-hero-hud" aria-hidden>
                   <span className="ap-hud-chip">
                     <i className="ap-live" />

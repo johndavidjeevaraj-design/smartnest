@@ -168,46 +168,51 @@ export default function KnxDemo() {
           } as CSSProperties
         }
       >
+        {/* The building arrives with nothing switched on. Every light you
+            see is the program's own — the dark base is the photograph
+            itself, filtered down, and a lit room reveals the bright
+            original through a mask over exactly that room. Because it is
+            the same photograph underneath, the reveal lines up with the
+            architecture pixel for pixel. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          className="ap-demo-base"
           src="/images/smartnest-villa.jpg"
-          alt="Cutaway view of a luxury smart villa showing the master bedroom, living room, kitchen, dining area, garden and entrance that can each be controlled independently"
+          alt="Unlit cutaway view of a luxury smart villa showing the master bedroom, living room, kitchen, dining area, garden and entrance, each independently controlled"
           width={1600}
           height={1067}
         />
 
+        <div className="ap-demo-night" aria-hidden />
+
         {ROOMS.map((room) => {
           const isOn = on.includes(room.id);
-          const lit = isOn ? 0.45 + (brightness / 100) * 0.55 : 0;
+          const power = isOn ? 0.45 + (brightness / 100) * 0.55 : 0;
           return (
             <span key={`room-${room.id}`} aria-hidden>
-              {/* A room that is OFF gets its own patch of night. Dimming
-                  the whole photograph instead would leave a lit villa
-                  with green labels on it, which is what made the old
-                  demo feel dead. */}
+              {/* The room, lit: the bright original revealed through a
+                  soft-edged mask centred on that room. */}
               <span
-                className="ap-room-shade"
-                style={{
-                  left: `${room.lx}%`,
-                  top: `${room.ly}%`,
-                  width: `${room.lw}%`,
-                  height: `${room.lh}%`,
-                  // A room that is off is fully shaded. A room that is on
-                  // is shaded in inverse proportion to its brightness —
-                  // which is what makes the brightness slider change the
-                  // picture instead of only the number beside it.
-                  opacity: isOn ? (1 - brightness / 100) * 0.78 : 0.92,
-                }}
+                className="ap-room-reveal"
+                style={
+                  {
+                    "--cx": `${room.lx}%`,
+                    "--cy": `${room.ly}%`,
+                    "--rw": `${room.lw * 0.8}%`,
+                    "--rh": `${room.lh * 0.8}%`,
+                    opacity: power,
+                  } as CSSProperties
+                }
               />
-              {/* ...and a room that is ON gets its own light pool. */}
+              {/* The glow it throws, which is what sells it as light. */}
               <span
-                className="ap-room-light"
+                className="ap-room-bloom"
                 style={{
                   left: `${room.lx}%`,
                   top: `${room.ly}%`,
                   width: `${room.lw}%`,
                   height: `${room.lh}%`,
-                  opacity: lit,
+                  opacity: power * 0.85,
                 }}
               />
             </span>
@@ -215,7 +220,11 @@ export default function KnxDemo() {
         })}
 
         <div className="ap-demo-warm" style={{ opacity: lightsActive ? 1 : 0 }} aria-hidden />
-        <div className="ap-demo-veil" style={{ opacity: 1 }} aria-hidden />
+        <div
+          className="ap-demo-veil"
+          style={{ opacity: ((100 - curtains) / 100) * 0.42 }}
+          aria-hidden
+        />
         <div className="ap-demo-scan" style={{ opacity: security ? 1 : 0 }} aria-hidden />
 
         <div className="ap-demo-topbar">
