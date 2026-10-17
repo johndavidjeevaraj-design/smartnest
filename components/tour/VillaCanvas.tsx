@@ -2,9 +2,8 @@
 
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import VillaScene from "./VillaScene";
-import type { RoomKey, TimeKey, View } from "./villa";
+import VillaScene, { type Journey } from "./VillaScene";
+import { VIEWS, type RoomKey, type TimeKey } from "./villa";
 
 export default function VillaCanvas({
   lights,
@@ -12,8 +11,7 @@ export default function VillaCanvas({
   curtains,
   time,
   cut,
-  view,
-  resetKey,
+  scroll,
   onPick,
 }: {
   lights: Record<RoomKey, boolean>;
@@ -21,16 +19,16 @@ export default function VillaCanvas({
   curtains: boolean;
   time: TimeKey;
   cut: boolean;
-  view: View;
-  resetKey: number;
+  scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
 }) {
   return (
     <Canvas
       shadows
       dpr={[1, 1.5]}
-      camera={{ fov: 38, position: [17, 9.5, 21], near: 0.4, far: 500 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      camera={{ fov: 58, position: [27, 10, 37], near: 0.05, far: 600 }}
+      gl={{ antialias: false, powerPreference: "high-performance" }}
+      style={{ touchAction: "pan-y" }}
     >
       <Suspense fallback={null}>
         <VillaScene
@@ -39,22 +37,11 @@ export default function VillaCanvas({
           curtains={curtains}
           time={time}
           cut={cut}
-          view={view}
-          resetKey={resetKey}
+          views={VIEWS}
+          scroll={scroll}
           onPick={onPick}
         />
       </Suspense>
-      <OrbitControls
-        makeDefault
-        enableDamping
-        dampingFactor={0.07}
-        enablePan={false}
-        minDistance={5}
-        maxDistance={52}
-        minPolarAngle={0.08}
-        maxPolarAngle={Math.PI * 0.495}
-        target={[0, 3.2, 1.5]}
-      />
     </Canvas>
   );
 }

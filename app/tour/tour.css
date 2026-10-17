@@ -1016,3 +1016,95 @@
   stroke: #a4e34a;
 }
 .vt-plan-room.is-on .vt-plan-label { fill: #a4e34a; }
+
+/* ─────────────────────────────────────────────────────────────
+   Scroll journey
+   ───────────────────────────────────────────────────────────── */
+
+/* the fixed stage sits over a tall spacer that generates the scroll length */
+.vt-space {
+  width: 100%;
+  pointer-events: none;
+}
+body:has(.vt-space) {
+  background: #070b12;
+}
+
+.vt-root {
+  /* the canvas must never eat a scroll gesture */
+  touch-action: pan-y;
+}
+
+/* journey progress hairline */
+.vt-rail {
+  position: absolute;
+  z-index: 6;
+  right: 10px;
+  top: 50%;
+  height: 190px;
+  width: 2px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.vt-rail i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: top;
+  background: linear-gradient(#a4e34a, #4fd4f5);
+}
+
+.vt-cap-n {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4fd4f5;
+}
+
+/* the chapter rail scrolls on its own when it overflows */
+.vt-chapters {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.vt-chapters::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .vt-rail {
+    display: none;
+  }
+  .vt-chapters {
+    max-height: none;
+    overflow: visible;
+  }
+  /* keep the caption clear of the bottom sheet */
+  .vt-caption {
+    bottom: 300px;
+  }
+  .vt-caption p {
+    display: none;
+  }
+}
+
+@media (max-width: 460px) {
+  .vt-caption {
+    bottom: 330px;
+  }
+  .vt-caption h1 {
+    font-size: 22px;
+  }
+}
+
+/* The journey damps itself, so CSS smooth scrolling would double-ease it — and
+   it silently breaks programmatic jumps (the chapter rail) on slow frames. */
+html:has(.vt-space),
+html:has(.vt-space) * {
+  scroll-behavior: auto !important;
+}

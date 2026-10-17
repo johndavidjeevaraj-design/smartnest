@@ -288,47 +288,146 @@ function Exposure({ value }: { value: number }) {
   return null;
 }
 
-function CameraRig({ view, cut, resetKey }: { view: View; cut: boolean; resetKey: number }) {
-  const { camera, controls, size } = useThree() as unknown as {
-    camera: THREE.PerspectiveCamera;
-    size: { width: number; height: number };
-    controls: { target: THREE.Vector3; enabled: boolean; update: () => void } | null;
-  };
-  // A portrait screen has far less horizontal field of view at the same fov,
-  // so every framed view would crop. Back the camera off instead of changing
-  // the lens, which keeps the perspective consistent across devices.
-  const aspect = size.width / Math.max(1, size.height);
-  const dolly = aspect < 0.8 ? 1.9 : aspect < 1.1 ? 1.5 : aspect < 1.45 ? 1.18 : 1;
-  const flying = useRef(0);
-  const pos = useRef(new THREE.Vector3(...view.pos));
-  const tgt = useRef(new THREE.Vector3(...view.target));
+/** Shared scroll state, written by the DOM thread, read once per frame. */
+export type Journey = { i: number };
+
+function ScrollRig({
+  scroll,
+  views,
+}: {
+  scroll: { current: Journey };
+  views: View[];
+}) {
+  const { camera, gl, size } = useThree();
+  const posCurve = useMemo(
+    () => new THREE.CatmullRomCurve3(views.map((v) => new THREE.Vector3(...v.pos)), false, "centripetal", 0.5),
+    [views],
+  );
+  const tgtCurve = useMemo(
+    () => new THREE.CatmullRomCurve3(views.map((v) => new THREE.Vector3(...v.target)), false, "centripetal", 0.5),
+    [views],
+  );
+
+  // Drag to look around. Scroll owns position; the pointer only adds a small
+  // yaw/pitch offset on top of the curve's own target, and it eases back to
+  // zero when you let go — the same contract as the reference walkthrough.
+  const look = useRef({ yaw: 0, pitch: 0, drag: false, x: 0, y: 0 });
 
   useEffect(() => {
-    const t = new THREE.Vector3(...view.target);
-    const p = new THREE.Vector3(...view.pos).sub(t).multiplyScalar(dolly).add(t);
-    pos.current.copy(p);
-    tgt.current.copy(t);
-    flying.current = 1;
-    if (controls) {
-      controls.enabled = false;
-    }
-  }, [view, controls, dolly, resetKey]);
+    const el = gl.domElement;
+    const onDown = (e: PointerEvent) => {
+      look.current.drag = true;
+      look.current.x = e.clientX;
+      look.current.y = e.clientY;
+      el.setPointerCapture?.(e.pointerId);
+      el.style.cursor = "grabbing";
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!look.current.drag) return;
+      const dx = e.clientX - look.current.x;
+      const dy = e.clientY - look.current.y;
+      look.current.x = e.clientX;
+      look.current.y = e.clientY;
+      look.current.yaw = THREE.MathUtils.clamp(look.current.yaw - dx * 0.0034, -1.15, 1.15);
+      look.current.pitch = THREE.MathUtils.clamp(look.current.pitch - dy * 0.0028, -0.62, 0.62);
+    };
+    const onUp = () => {
+      look.current.drag = false;
+      el.style.cursor = "grab";
+    };
+    el.style.cursor = "grab";
+    el.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [gl]);
 
-  useFrame((_, dt) => {
-    const k = 1 - Math.pow(0.0015, Math.min(dt, 0.05));
-    camera.position.lerp(pos.current, k);
-    if (controls) {
-      controls.target.lerp(tgt.current, k);
-      controls.update();
+  // Portrait screens see far less horizontally at the same fov, so widen the
+  // lens rather than dolly — the reference does exactly this (58 → 74).
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    const aspect = size.width / Math.max(1, size.height);
+    cam.fov = aspect < 0.85 ? 74 : aspect < 1.15 ? 66 : 58;
+    cam.updateProjectionMatrix();
+  }, [camera, size]);
+
+  const tmp = useMemo(
+    () => ({ p: new THREE.Vector3(), t: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Euler(0, 0, 0, "YXZ") }),
+    [],
+  );
+
+  useFrame((state, dt) => {
+    const i = scroll.current.i;
+    const s = THREE.MathUtils.clamp(i / (views.length - 1), 0, 1);
+
+    posCurve.getPoint(s, tmp.p);
+    tgtCurve.getPoint(s, tmp.t);
+
+    // handheld sway, strongest at the very start and the very end
+    const time = state.clock.elapsedTime;
+    const r =
+      Math.sin(time * 0.11) * 0.5 * (1 - THREE.MathUtils.smoothstep(i, 0, 1.1)) +
+      Math.sin(time * 0.09) * 0.18 * THREE.MathUtils.smoothstep(i, views.length - 1.6, views.length - 1);
+    if (r) {
+      tmp.p.sub(tmp.t).applyAxisAngle(THREE.Object3D.DEFAULT_UP, r).add(tmp.t);
     }
-    if (flying.current > 0) {
-      flying.current -= dt;
-      if (flying.current <= 0 && controls) controls.enabled = true;
+
+    camera.position.copy(tmp.p);
+
+    tmp.d.copy(tmp.t).sub(tmp.p).normalize();
+    if (!look.current.drag) {
+      const k = Math.pow(0.015, dt);
+      look.current.yaw *= k;
+      look.current.pitch *= k;
     }
+    tmp.e.set(look.current.pitch, look.current.yaw, 0);
+    tmp.d.applyEuler(tmp.e);
+    camera.lookAt(tmp.p.clone().add(tmp.d));
   });
 
-  // unused, keeps `cut` in the dependency story honest for callers
-  void cut;
+  return null;
+}
+
+/**
+ * The section cut. A real clipping plane, not opacity — the same technique the
+ * reference site uses, which is why the cut edge is crisp and the interior
+ * behind it is intact. Only active through the "Section" leg of the journey.
+ */
+function SectionPlane({ scroll }: { scroll: { current: Journey } }) {
+  const gl = useThree((s) => s.gl);
+  const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000), []);
+
+  useEffect(() => {
+    gl.localClippingEnabled = true;
+    return () => {
+      gl.clippingPlanes = [];
+    };
+  }, [gl]);
+
+  useFrame(() => {
+    const i = scroll.current.i;
+    // Engage on the lift into chapter 09, sweep down through the building, then
+    // disengage on the way out. The constant has to move through the *building's*
+    // height, not from a sentinel — lerping from 1000 spends the whole transition
+    // above the roof and never cuts anything.
+    const a = THREE.MathUtils.smoothstep(i, 8.0, 8.4);
+    const b = 1 - THREE.MathUtils.smoothstep(i, 9.65, 9.95);
+    const on = a * b;
+    if (on < 0.004) {
+      gl.clippingPlanes = [];
+      return;
+    }
+    // Sweep from just above the roof (8.4 m) down to the first-floor slab
+    // (4.0 m). Stopping at the slab is deliberate: below that the plane also
+    // removes the ground, the driveway and the terrace, and the shot goes empty.
+    plane.constant = 8.4 - 4.4 * on;
+    gl.clippingPlanes = [plane];
+  });
+
   return null;
 }
 
@@ -339,6 +438,7 @@ function Interior({
   curtains,
   time,
   cut,
+  scroll,
   onPick,
 }: {
   rig: Rig;
@@ -347,6 +447,7 @@ function Interior({
   curtains: boolean;
   time: TimeKey;
   cut: boolean;
+  scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
 }) {
   const hover = useRef(false);
@@ -377,20 +478,23 @@ function Interior({
       m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, sc, k);
     }
 
-    // walls ghost out for the section view
-    const wallTarget = cut ? 0.05 : 1;
+    // walls ghost out inside the house and for manual x-ray
+    const inHouse = THREE.MathUtils.smoothstep(scroll.current.i, 3.2, 4.4) *
+      (1 - THREE.MathUtils.smoothstep(scroll.current.i, 9.2, 9.9));
+    const ghost = Math.max(cut ? 1 : 0, inHouse);
+    const wallTarget = 1 - ghost * 0.95;
     for (const m of rig.wallMats) {
       m.opacity = THREE.MathUtils.lerp(m.opacity, wallTarget, k);
       m.depthWrite = m.opacity > 0.7;
     }
 
-    // gate swing
+    // garage door lifts as you turn into the drive, and stays up while inside
     if (rig.gatePivot) {
-      rig.gatePivot.position.y = THREE.MathUtils.lerp(
-        rig.gatePivot.position.y,
-        gate ? 2.7 : 0,
-        k,
-      );
+      const autoOpen =
+        THREE.MathUtils.smoothstep(scroll.current.i, 1.1, 2.3) *
+        (1 - THREE.MathUtils.smoothstep(scroll.current.i, 8.9, 9.8));
+      const open = Math.max(autoOpen, gate ? 1 : 0);
+      rig.gatePivot.position.y = THREE.MathUtils.lerp(rig.gatePivot.position.y, open * 2.75, k);
     }
 
     // curtain slide
@@ -435,8 +539,8 @@ export default function VillaScene({
   curtains,
   time,
   cut,
-  view,
-  resetKey,
+  views,
+  scroll,
   onPick,
 }: {
   lights: Record<RoomKey, boolean>;
@@ -444,8 +548,8 @@ export default function VillaScene({
   curtains: boolean;
   time: TimeKey;
   cut: boolean;
-  view: View;
-  resetKey: number;
+  views: View[];
+  scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
 }) {
   const { scene } = useGLTF(MODEL);
@@ -510,9 +614,11 @@ export default function VillaScene({
         curtains={curtains}
         time={time}
         cut={cut}
+        scroll={scroll}
         onPick={onPick}
       />
-      <CameraRig view={view} cut={cut} resetKey={resetKey} />
+      <ScrollRig scroll={scroll} views={views} />
+      <SectionPlane scroll={scroll} />
     </>
   );
 }

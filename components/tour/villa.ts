@@ -104,76 +104,165 @@ export type View = {
   pos: [number, number, number];
   target: [number, number, number];
   cut: boolean;
+  /** How much scroll this leg of the journey consumes. */
+  w: number;
 };
 
+/**
+ * The journey. Two Catmull-Rom curves are built from these — one through `pos`,
+ * one through `target` — exactly the technique the reference walkthrough uses.
+ * `w` is the scroll weight per leg, so a corridor can take a flick and the
+ * approach can take two.
+ *
+ * The path goes in through the garage, sweeps the ground floor, rises to the
+ * first floor, lifts into a section, then returns outside.
+ */
 export const VIEWS: View[] = [
   {
-    id: "arrival",
+    id: "approach",
     n: "01",
-    label: "Arrival",
-    title: "It starts at the gate.",
+    label: "Approach",
+    title: "Walk through it before it's built.",
     blurb:
-      "Twenty-four metres of frontage. The garage knows the car, the path lights come up, and the house is already awake.",
-    pos: [17, 7.6, 25],
+      "Twenty-four metres of frontage on a 1,254 sq ft plot line. Keep scrolling — the house lets you in.",
+    pos: [27, 10, 37],
     target: [0.8, 3.2, -2],
     cut: false,
+    w: 1.4,
   },
   {
-    id: "house",
+    id: "forecourt",
     n: "02",
-    label: "The house",
-    title: "Two storeys, one system.",
+    label: "Forecourt",
+    title: "The gate knows the car.",
     blurb:
-      "Ground floor for living, first floor for sleeping, a wraparound terrace between them. Everything below it is yours to switch.",
-    pos: [21, 16.5, 22],
-    target: [0.8, 2.4, -6],
-    cut: true,
+      "The driveway lights come up as you approach and the garage door lifts on its own.",
+    pos: [11.5, 3.6, 21],
+    target: [3.6, 2.2, 3],
+    cut: false,
+    w: 1.2,
   },
   {
-    id: "living",
+    id: "threshold",
     n: "03",
-    label: "Living",
-    title: "Light that follows the evening.",
+    label: "Threshold",
+    title: "No key. No remote.",
     blurb:
-      "Scenes, not switches. The living wing drops to 9% at dusk without anyone touching a wall.",
-    pos: [-16, 6.5, 14],
-    target: [-1, 2.2, -6],
-    cut: true,
+      "A KNX presence sensor sees you, and the house starts its arrival scene before you touch a switch.",
+    pos: [4.6, 1.85, 11],
+    target: [4.3, 1.75, 0],
+    cut: false,
+    w: 1.1,
   },
   {
-    id: "kitchen",
+    id: "garage",
     n: "04",
-    label: "Kitchen",
-    title: "The busiest room, quietly managed.",
+    label: "Garage",
+    title: "You are inside the building.",
     blurb:
-      "Task lighting over the counters, a hood that talks to the extractor, and a panel by the door.",
-    pos: [19, 7.5, 10],
-    target: [4.5, 2.0, -10],
+      "Scroll on and the camera walks the ground floor. The far wall is the back of the plot.",
+    pos: [4.4, 1.75, 5.4],
+    target: [2.6, 1.7, -5],
     cut: true,
+    w: 1.0,
+  },
+  {
+    id: "ground",
+    n: "05",
+    label: "Ground floor",
+    title: "Living, dining, kitchen — one volume.",
+    blurb:
+      "The plan is open on purpose. Every circuit in here is addressable from one keypad by the door.",
+    pos: [3.4, 1.75, -1],
+    target: [-1.5, 1.8, -11],
+    cut: true,
+    w: 1.35,
+  },
+  {
+    id: "back",
+    n: "06",
+    label: "Rear",
+    title: "Fourteen windows, one bus.",
+    blurb:
+      "Every window has a contact sensor. Open one and the air conditioning in that zone drops out.",
+    pos: [0.6, 1.75, -9],
+    target: [4.5, 1.7, -15],
+    cut: true,
+    w: 1.2,
+  },
+  {
+    id: "rise",
+    n: "07",
+    label: "Stair",
+    title: "Up to the sleeping floor.",
+    blurb:
+      "Landing, master suite, east wing. Goodnight drops all of this at once from the keypad downstairs.",
+    pos: [0.2, 5.0, -6],
+    target: [-3.5, 4.6, -13],
+    cut: true,
+    w: 1.1,
   },
   {
     id: "master",
-    n: "05",
+    n: "08",
     label: "Master",
     title: "One button, and the day is over.",
     blurb:
-      "Goodnight drops the shutters, kills the lights downstairs, arms the perimeter and sets the thermostat.",
-    pos: [-18, 13.5, 12],
-    target: [-2, 5.4, -8],
+      "Shutters down, downstairs dark, perimeter armed, thermostat set. You never leave the bed.",
+    pos: [-4.6, 4.85, -7],
+    target: [-5.2, 4.4, -14.5],
     cut: true,
+    w: 1.3,
   },
   {
-    id: "plan",
-    n: "06",
-    label: "The plan",
+    id: "section",
+    n: "09",
+    label: "Section",
     title: "Look at it the way we do.",
     blurb:
-      "Walls go transparent so you can see the whole system at once — the drawing the electrician installs from.",
-    pos: [1, 40, 14],
-    target: [1, 1, -5],
+      "A clipping plane cuts the house in half. This is the drawing the electrician installs from.",
+    pos: [13, 11, 12],
+    target: [0.8, 2.4, -6],
     cut: true,
+    w: 1.5,
+  },
+  {
+    id: "return",
+    n: "10",
+    label: "Outside",
+    title: "You have walked the whole house.",
+    blurb: "",
+    pos: [21, 13.5, 31],
+    target: [0.8, 3, -4],
+    cut: false,
+    w: 1.3,
   },
 ];
+
+/** Total scroll weight — the page is this many screens tall. */
+export const TOTAL_WEIGHT = VIEWS.reduce((n, v) => n + v.w, 0);
+
+/** Cumulative offsets, so an index maps to a scroll fraction and back. */
+export const CUMULATIVE: number[] = (() => {
+  const c = [0];
+  for (let i = 0; i < VIEWS.length - 1; i++) c.push(c[i] + VIEWS[i].w);
+  return c;
+})();
+
+/** Scroll fraction (0–1) → float index (0 … N-1). */
+export function progressToIndex(p: number): number {
+  const t = Math.min(Math.max(p, 0), 1) * TOTAL_WEIGHT;
+  let seg = 0;
+  while (seg < VIEWS.length - 2 && CUMULATIVE[seg + 1] <= t) seg++;
+  const span = CUMULATIVE[seg + 1] - CUMULATIVE[seg] || 1;
+  return Math.min(Math.max(seg + (t - CUMULATIVE[seg]) / span, 0), VIEWS.length - 1);
+}
+
+/** Float index → scroll fraction, for the chapter rail. */
+export function indexToProgress(i: number): number {
+  const n = Math.min(Math.max(Math.floor(i), 0), VIEWS.length - 2);
+  return (CUMULATIVE[n] + (i - n) * VIEWS[n].w) / TOTAL_WEIGHT;
+}
 
 export type TourState = {
   lights: Record<RoomKey, boolean>;
