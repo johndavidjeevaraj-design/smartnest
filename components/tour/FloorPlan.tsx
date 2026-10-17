@@ -2,7 +2,7 @@
 
 import { FIRST_WALLS, GROUND_WALLS, PLAN_ROOMS, type PlanRoom } from "./plan";
 
-const VB = { x: -9.5, y: -17.6, w: 20.5, h: 27.4 };
+const VB = { x: -7.2, y: -6.2, w: 14.4, h: 13.0 };
 
 export default function FloorPlan({
   floor,
@@ -65,6 +65,9 @@ export default function FloorPlan({
 
         {rooms.map((r) => {
           const on = selected === r.id;
+          const w = r.x1 - r.x0;
+          const d = r.z1 - r.z0;
+          const area = Math.round(w * d);
           return (
             <g
               key={r.id}
@@ -78,13 +81,34 @@ export default function FloorPlan({
                   onSelect(r);
                 }
               }}
-              aria-label={r.label}
+              aria-label={`${r.label}, ${area} square metres`}
             >
-              <circle cx={r.cx} cy={r.cz} r={on ? 0.62 : 0.46} className="vt-zone-dot" />
-              <circle cx={r.cx} cy={r.cz} r={0.16} className="vt-zone-core" />
-              <text x={r.cx} y={r.cz + 1.15} textAnchor="middle" className="vt-plan-label">
-                {r.label}
+              <rect x={r.x0} y={r.z0} width={w} height={d} rx={0.04} />
+              <text
+                x={r.cx}
+                y={r.cz - (w < 1.4 ? 0.1 : 0)}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className={w < 1.4 ? "vt-plan-label vt-plan-label-sm" : "vt-plan-label"}
+              >
+                {w < 1.4 ? "" : r.label}
               </text>
+              {w >= 1.4 && (
+                <text
+                  x={r.cx}
+                  y={r.cz + 0.55}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="vt-plan-area"
+                >
+                  {area} m²
+                </text>
+              )}
+              {w < 1.4 && (
+                <text x={r.cx} y={r.cz} textAnchor="middle" dominantBaseline="middle" className="vt-plan-area">
+                  {area}
+                </text>
+              )}
             </g>
           );
         })}
@@ -92,22 +116,22 @@ export default function FloorPlan({
         {walls.map((w, i) => (
           <rect
             key={i}
-            className={w.kind === "mass" ? "vt-plan-wall" : "vt-plan-slab"}
+            className="vt-plan-wall"
             x={w.x0}
             y={w.z0}
-            width={w.x1 - w.x0}
-            height={w.z1 - w.z0}
+            width={Math.max(0.05, w.x1 - w.x0)}
+            height={Math.max(0.05, w.z1 - w.z0)}
           />
         ))}
 
-        <text x={-9} y={8.3} className="vt-plan-note">
-          street
+        <text x={-7} y={5.9} className="vt-plan-note">
+          front of house
         </text>
       </svg>
 
       <p className="vt-plan-foot">
-        Massing measured from the model. Dots are the automation zones — pick one
-        to walk to it.
+        Drawn from the same dimensions the house is built with. Pick a room to
+        walk into it.
       </p>
     </div>
   );

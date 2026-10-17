@@ -23,14 +23,20 @@ const ALL_OFF: Record<RoomKey, boolean> = {
   living: false,
   dining: false,
   kitchen: false,
-  guest: false,
+  foyer: false,
+  bath: false,
   master: false,
-  bedroom2: false,
+  bed2: false,
+  bed3: false,
+  landing: false,
 };
 
 const SCENE_STATE: Record<SceneKey, { lights: Partial<Record<RoomKey, boolean>>; time: TimeKey }> = {
-  welcome: { lights: { living: true, dining: true, kitchen: true, guest: true, master: true, bedroom2: true }, time: "day" },
-  relax: { lights: { living: true, dining: true, master: true }, time: "dusk" },
+  welcome: {
+    lights: { living: true, dining: true, kitchen: true, foyer: true, master: true, bed2: true, bed3: true, landing: true },
+    time: "day",
+  },
+  relax: { lights: { living: true, dining: true, master: true, bed3: true }, time: "dusk" },
   movie: { lights: { living: true }, time: "night" },
   away: { lights: {}, time: "night" },
 };
@@ -61,9 +67,12 @@ export default function TourClient() {
     living: true,
     dining: false,
     kitchen: true,
-    guest: false,
+    foyer: false,
+    bath: false,
     master: true,
-    bedroom2: false,
+    bed2: false,
+    bed3: false,
+    landing: false,
   });
   const [gate, setGate] = useState(false);
   const [curtains, setCurtains] = useState(true);
@@ -186,11 +195,56 @@ export default function TourClient() {
     };
   }, []);
 
-  const goChapter = useCallback((i: number) => {
-    const top = indexToProgress(i) * Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    window.scrollTo({ top, behavior: "smooth" });
-    setActiveRoom(null);
+  /**
+   * Chapter jumps are animated in wall-clock time, not by the browser's
+   * smooth-scroll. The page is ~12,000px tall, and on a slow GPU the native
+   * animation advances a frame at a time — a tap on "Master" would still be
+   * travelling several seconds later. 620ms is 620ms on any machine.
+   */
+  const jump = useRef(0);
+  const smoothTo = useCallback((top: number) => {
+    const html = document.documentElement;
+    const from = window.scrollY;
+    const delta = top - from;
+    const id = ++jump.current;
+    if (Math.abs(delta) < 2) return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const dur = reduced ? 1 : 620;
+    const t0 = performance.now();
+    const prev = html.style.scrollBehavior;
+    html.style.scrollBehavior = "auto";
+    const step = () => {
+      if (id !== jump.current) return;
+      const k = Math.min(1, (performance.now() - t0) / dur);
+      window.scrollTo(0, from + delta * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+      else html.style.scrollBehavior = prev;
+    };
+    requestAnimationFrame(step);
   }, []);
+
+  // a wheel or a drag beats a programmatic jump
+  useEffect(() => {
+    const cancel = () => {
+      jump.current++;
+    };
+    window.addEventListener("wheel", cancel, { passive: true });
+    window.addEventListener("touchstart", cancel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", cancel);
+      window.removeEventListener("touchstart", cancel);
+    };
+  }, []);
+
+  const goChapter = useCallback(
+    (i: number) => {
+      const top =
+        indexToProgress(i) * Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      smoothTo(top);
+      setActiveRoom(null);
+    },
+    [smoothTo],
+  );
 
   // arrow keys drive the journey
   useEffect(() => {
@@ -407,7 +461,7 @@ export default function TourClient() {
               <span>X-Ray</span>
               <b>{cut ? "On" : "Off"}</b>
             </button>
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            <button type="button" onClick={() => smoothTo(0)}>
               <span>Back to start</span>
               <b>↺</b>
             </button>

@@ -11,217 +11,45 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useThree } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import {
-  LIGHT_POINTS,
-  ROOMS,
-  SWITCH_ROOMS,
-  TIMES,
-  type RoomKey,
-  type TimeKey,
-  type View,
-} from "./villa";
+import { buildVilla, type VillaBuild } from "./buildVilla";
+import { LIGHT_POINTS, ROOMS, TIMES, type RoomKey, type TimeKey, type View } from "./villa";
 
-const MODEL = "/models/smartnest-3bhk-villa.glb";
+const WARM = new THREE.Color("#ffd0a4");
 
-const ROOM_PREFIX: [string, RoomKey][] = [
-  ["LIVING", "living"],
-  ["DINING", "dining"],
-  ["KITCHEN", "kitchen"],
-  ["GUEST", "guest"],
-  ["MASTER", "master"],
-  ["BEDROOM", "bedroom2"],
-];
+export type Journey = { i: number };
 
-type Rig = {
-  scene: THREE.Object3D;
-  lights: Record<RoomKey, THREE.PointLight[]>;
-  fixtureMats: Record<RoomKey, THREE.MeshStandardMaterial[]>;
-  ledMats: THREE.MeshStandardMaterial[];
-  sconceMats: THREE.MeshStandardMaterial[];
-  wallMats: THREE.MeshStandardMaterial[];
-  gatePivot: THREE.Group | null;
-  curtainGroups: { g: THREE.Group; dir: number }[];
-};
-
-const WARM = new THREE.Color("#ffb066");
-
-function nearestRoom(p: THREE.Vector3): RoomKey {
-  let best: RoomKey = "living";
-  let d = Infinity;
-  for (const lp of LIGHT_POINTS) {
-    const dd = (lp.p[0] - p.x) ** 2 + (lp.p[1] - p.y) ** 2 + (lp.p[2] - p.z) ** 2;
-    if (dd < d) {
-      d = dd;
-      best = lp.room;
-    }
-  }
-  return best;
-}
-
-function buildRig(root: THREE.Object3D): Rig {
-  const lights = {} as Record<RoomKey, THREE.PointLight[]>;
-  const fixtureMats = {} as Record<RoomKey, THREE.MeshStandardMaterial[]>;
-  for (const r of ROOMS) {
-    lights[r.key] = [];
-    fixtureMats[r.key] = [];
-  }
-  const ledMats: THREE.MeshStandardMaterial[] = [];
-  const sconceMats: THREE.MeshStandardMaterial[] = [];
-  const wallMats: THREE.MeshStandardMaterial[] = [];
-  const gateSlats: THREE.Object3D[] = [];
-  const curtains: THREE.Object3D[] = [];
-  const tuned = new Set<string>();
-
-  root.updateMatrixWorld(true);
-
-  root.traverse((o) => {
-    const name = o.name;
-
-    // Drop the Blender punctual lights — they are far too hot for realtime.
-    if ((o as THREE.Light).isLight) {
-      o.visible = false;
-      return;
-    }
-
-    const mesh = o as THREE.Mesh;
-    if (mesh.isMesh) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-
-      if (name === "SMART_GATE_Panel") {
-        mesh.visible = false;
-        return;
-      }
-
-      const p = new THREE.Vector3();
-      mesh.getWorldPosition(p);
-
-      const mm = mesh.material as THREE.MeshStandardMaterial;
-
-      // One pass over every material: this model's surfaces are matte, and a
-      // low-roughness dielectric under a bright env map turns into a mirror at
-      // grazing angles. Clamp them before anything is cloned.
-      if (mm && !tuned.has(mm.uuid)) {
-        tuned.add(mm.uuid);
-        if ((mm as THREE.MeshStandardMaterial).isMeshStandardMaterial) {
-          mm.roughness = Math.max(mm.roughness ?? 0.5, 0.58);
-          mm.envMapIntensity = 0.38;
-          if (mm.metalness > 0.25) mm.metalness = 0.25;
-        }
-      }
-
-      for (const key of ["map", "normalMap", "roughnessMap", "metalnessMap"] as const) {
-        const tex = (mm as unknown as Record<string, THREE.Texture | null>)[key];
-        if (tex) tex.anisotropy = 8;
-      }
-      if (mm?.name === "m.GlassReal") {
-        mm.transparent = true;
-        mm.opacity = 0.34;
-        mm.metalness = 0.1;
-        mm.roughness = 0.06;
-        mm.color = new THREE.Color("#b9d4dc");
-        mm.depthWrite = false;
-      }
-      if (mm?.name === "SN_Microcement") {
-        mm.color.multiplyScalar(0.7);
-        mm.roughness = 0.85;
-      }
-      if (mm?.name && /Landscape|Tropical|Ground/i.test(mm.name)) {
-        const hsl = { h: 0, s: 0, l: 0 };
-        mm.color.getHSL(hsl);
-        mm.color.setHSL(hsl.h, hsl.s * 0.62, hsl.l * 0.86);
-      }
-      if (mm?.name === "SN_Charcoal_Metal") {
-        mm.color.multiplyScalar(1.35);
-        mm.needsUpdate = true;
-      }
-
-      if (name.startsWith("LIGHT_FIXTURE")) {
-        const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-        mat.emissive = WARM.clone();
-        mat.emissiveIntensity = 0.02;
-        mesh.material = mat;
-        fixtureMats[nearestRoom(p)].push(mat);
-      } else if (name.startsWith("SWITCH_") && name.endsWith("_LED")) {
-        const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-        mat.emissive = new THREE.Color("#33f2ae");
-        mat.emissiveIntensity = 0.2;
-        mat.toneMapped = false;
-        mesh.material = mat;
-        ledMats.push(mat);
-      } else if (name.startsWith("EXTERIOR_SCONCE_GLOW")) {
-        const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-        mat.emissive = WARM.clone();
-        mat.emissiveIntensity = 0.1;
-        mesh.material = mat;
-        sconceMats.push(mat);
-      } else if (/^wall/i.test(name)) {
-        const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-        mat.transparent = true;
-        mesh.material = mat;
-        wallMats.push(mat);
-      }
-    }
-
-    // clickable room surfaces
-    for (const [prefix, room] of ROOM_PREFIX) {
-      if (name.startsWith(prefix)) o.userData.room = room;
-    }
-    if (name in SWITCH_ROOMS) o.userData.room = SWITCH_ROOMS[name];
-
-    if (name.startsWith("garagedoor")) gateSlats.push(o);
-
-  });
-
-  // ── garage door: slides up into the lintel ────────────────────────────
-  let gatePivot: THREE.Group | null = null;
-  if (gateSlats.length) {
-    gatePivot = new THREE.Group();
-    gatePivot.position.set(0, 0, 0);
-    root.add(gatePivot);
-    root.updateMatrixWorld(true);
-    for (const s of gateSlats) gatePivot.attach(s);
-  }
-
-  // ── curtains: a group per panel so we can slide them apart ────────────
-  const curtainGroups: { g: THREE.Group; dir: number }[] = [];
-  curtains.forEach((c) => {
-    const wp = new THREE.Vector3();
-    c.getWorldPosition(wp);
-    const g = new THREE.Group();
-    g.position.set(0, 0, 0);
-    root.add(g);
-    root.updateMatrixWorld(true);
-    g.attach(c);
-    curtainGroups.push({ g, dir: wp.x < 2.6 ? -1 : 1 });
-  });
-
-  return { scene: root, lights, fixtureMats, ledMats, sconceMats, wallMats, gatePivot, curtainGroups };
-}
-
-/** Vertical gradient dome — cheap, no texture, no CDN. */
+/** Vertical gradient dome — cheap, procedural, no texture download. */
 function SkyDome({ top, bottom }: { top: string; bottom: string }) {
-  const mat = useMemo(() => {
-    return new THREE.ShaderMaterial({
-      side: THREE.BackSide,
-      depthWrite: false,
-      fog: false,
-      uniforms: {
-        uTop: { value: new THREE.Color(top) },
-        uBottom: { value: new THREE.Color(bottom) },
-      },
-      vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-      fragmentShader: `uniform vec3 uTop; uniform vec3 uBottom; varying vec3 vP;
+  const mat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        fog: false,
+        uniforms: {
+          uTop: { value: new THREE.Color(top) },
+          uBottom: { value: new THREE.Color(bottom) },
+        },
+        vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+        fragmentShader: `uniform vec3 uTop; uniform vec3 uBottom; varying vec3 vP;
         void main(){
-          float h = clamp(normalize(vP).y * 0.5 + 0.5, 0.0, 1.0);
-          h = pow(h, 0.85);
-          gl_FragColor = vec4(mix(uBottom, uTop, h), 1.0);
+          float t = normalize(vP).y;
+          // tight horizon band: warm at eye level, deep overhead. A wide
+          // blend turns every frame into muddy brown at dusk.
+          float k = smoothstep(0.0, 0.44, t);
+          vec3 c = mix(uBottom, uTop, pow(k, 0.85));
+          c = mix(c, uBottom * 0.42, smoothstep(0.0, -0.4, t));
+          gl_FragColor = vec4(c, 1.0);
+          // custom shaders do not get the renderer's tone-map / colour-space
+          // pass for free; without these the sky reads as muddy brown.
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
         }`,
-    });
-  }, [top, bottom]);
+      }),
+    [top, bottom],
+  );
   return (
     <mesh material={mat} scale={300} frustumCulled={false}>
       <sphereGeometry args={[1, 32, 16]} />
@@ -229,21 +57,16 @@ function SkyDome({ top, bottom }: { top: string; bottom: string }) {
   );
 }
 
-/** Bakes the gradient dome into a PMREM environment so materials get real reflections. */
+/** Bakes the same gradient into a PMREM env so materials get real reflections. */
 function EnvDome({ top, bottom, intensity }: { top: string; bottom: string; intensity: number }) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
-
   useEffect(() => {
     const pmrem = new THREE.PMREMGenerator(gl);
-    pmrem.compileEquirectangularShader();
     const s = new THREE.Scene();
     const mat = new THREE.ShaderMaterial({
       side: THREE.BackSide,
-      uniforms: {
-        uTop: { value: new THREE.Color(top) },
-        uBottom: { value: new THREE.Color(bottom) },
-      },
+      uniforms: { uTop: { value: new THREE.Color(top) }, uBottom: { value: new THREE.Color(bottom) } },
       vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
       fragmentShader: `uniform vec3 uTop; uniform vec3 uBottom; varying vec3 vP;
         void main(){
@@ -259,13 +82,11 @@ function EnvDome({ top, bottom, intensity }: { top: string; bottom: string; inte
     );
     sun.position.set(0.6, 0.5, 0.6);
     s.add(sun);
-
     const rt = pmrem.fromScene(s, 0.02);
     scene.environment = rt.texture;
     if ("environmentIntensity" in scene) {
       (scene as THREE.Scene & { environmentIntensity: number }).environmentIntensity = intensity;
     }
-
     return () => {
       scene.environment = null;
       rt.dispose();
@@ -276,7 +97,6 @@ function EnvDome({ top, bottom, intensity }: { top: string; bottom: string; inte
       (sun.material as THREE.Material).dispose();
     };
   }, [gl, scene, top, bottom, intensity]);
-
   return null;
 }
 
@@ -288,16 +108,8 @@ function Exposure({ value }: { value: number }) {
   return null;
 }
 
-/** Shared scroll state, written by the DOM thread, read once per frame. */
-export type Journey = { i: number };
-
-function ScrollRig({
-  scroll,
-  views,
-}: {
-  scroll: { current: Journey };
-  views: View[];
-}) {
+/** Scroll → two Catmull-Rom curves → camera. Drag adds a look offset. */
+function ScrollRig({ scroll, views }: { scroll: { current: Journey }; views: View[] }) {
   const { camera, gl, size } = useThree();
   const posCurve = useMemo(
     () => new THREE.CatmullRomCurve3(views.map((v) => new THREE.Vector3(...v.pos)), false, "centripetal", 0.5),
@@ -308,9 +120,6 @@ function ScrollRig({
     [views],
   );
 
-  // Drag to look around. Scroll owns position; the pointer only adds a small
-  // yaw/pitch offset on top of the curve's own target, and it eases back to
-  // zero when you let go — the same contract as the reference walkthrough.
   const look = useRef({ yaw: 0, pitch: 0, drag: false, x: 0, y: 0 });
 
   useEffect(() => {
@@ -346,17 +155,21 @@ function ScrollRig({
     };
   }, [gl]);
 
-  // Portrait screens see far less horizontally at the same fov, so widen the
-  // lens rather than dolly — the reference does exactly this (58 → 74).
-  useEffect(() => {
-    const cam = camera as THREE.PerspectiveCamera;
-    const aspect = size.width / Math.max(1, size.height);
-    cam.fov = aspect < 0.85 ? 74 : aspect < 1.15 ? 66 : 58;
-    cam.updateProjectionMatrix();
-  }, [camera, size]);
+  const aspect = size.width / Math.max(1, size.height);
+  const bonus = aspect < 0.85 ? 14 : aspect < 1.15 ? 7 : 0;
+  const aspectRef = useRef(aspect);
+  aspectRef.current = aspect;
+  const bonusRef = useRef(bonus);
+  bonusRef.current = bonus;
 
   const tmp = useMemo(
-    () => ({ p: new THREE.Vector3(), t: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Euler(0, 0, 0, "YXZ") }),
+    () => ({
+      p: new THREE.Vector3(),
+      t: new THREE.Vector3(),
+      d: new THREE.Vector3(),
+      e: new THREE.Euler(0, 0, 0, "YXZ"),
+      add: new THREE.Vector3(),
+    }),
     [],
   );
 
@@ -367,14 +180,25 @@ function ScrollRig({
     posCurve.getPoint(s, tmp.p);
     tgtCurve.getPoint(s, tmp.t);
 
-    // handheld sway, strongest at the very start and the very end
+    // easing the lens between waypoints is what makes a bedroom feel like a
+    // room instead of a cupboard
+    const n = views.length - 1;
+    const a = Math.floor(i);
+    const f = i - a;
+    const fovA = views[Math.min(a, n)].fov ?? 58;
+    const fovB = views[Math.min(a + 1, n)].fov ?? 58;
+    const cam = camera as THREE.PerspectiveCamera;
+    const want = THREE.MathUtils.lerp(fovA, fovB, f) + bonusRef.current;
+    if (Math.abs(cam.fov - want) > 0.01) {
+      cam.fov = want;
+      cam.updateProjectionMatrix();
+    }
+
     const time = state.clock.elapsedTime;
     const r =
-      Math.sin(time * 0.11) * 0.5 * (1 - THREE.MathUtils.smoothstep(i, 0, 1.1)) +
-      Math.sin(time * 0.09) * 0.18 * THREE.MathUtils.smoothstep(i, views.length - 1.6, views.length - 1);
-    if (r) {
-      tmp.p.sub(tmp.t).applyAxisAngle(THREE.Object3D.DEFAULT_UP, r).add(tmp.t);
-    }
+      Math.sin(time * 0.11) * 0.4 * (1 - THREE.MathUtils.smoothstep(i, 0, 1.1)) +
+      Math.sin(time * 0.09) * 0.15 * THREE.MathUtils.smoothstep(i, views.length - 1.6, views.length - 1);
+    if (r) tmp.p.sub(tmp.t).applyAxisAngle(THREE.Object3D.DEFAULT_UP, r).add(tmp.t);
 
     camera.position.copy(tmp.p);
 
@@ -386,17 +210,14 @@ function ScrollRig({
     }
     tmp.e.set(look.current.pitch, look.current.yaw, 0);
     tmp.d.applyEuler(tmp.e);
-    camera.lookAt(tmp.p.clone().add(tmp.d));
+    tmp.add.copy(tmp.p).add(tmp.d);
+    camera.lookAt(tmp.add);
   });
 
   return null;
 }
 
-/**
- * The section cut. A real clipping plane, not opacity — the same technique the
- * reference site uses, which is why the cut edge is crisp and the interior
- * behind it is intact. Only active through the "Section" leg of the journey.
- */
+/** A real clipping plane for the section chapter. */
 function SectionPlane({ scroll }: { scroll: { current: Journey } }) {
   const gl = useThree((s) => s.gl);
   const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000), []);
@@ -410,21 +231,17 @@ function SectionPlane({ scroll }: { scroll: { current: Journey } }) {
 
   useFrame(() => {
     const i = scroll.current.i;
-    // Engage on the lift into chapter 09, sweep down through the building, then
-    // disengage on the way out. The constant has to move through the *building's*
-    // height, not from a sentinel — lerping from 1000 spends the whole transition
-    // above the roof and never cuts anything.
-    const a = THREE.MathUtils.smoothstep(i, 8.0, 8.4);
-    const b = 1 - THREE.MathUtils.smoothstep(i, 9.65, 9.95);
+    // fully open at the section waypoint itself (index 9), released by 10
+    const a = THREE.MathUtils.smoothstep(i, 8.45, 9.0);
+    const b = 1 - THREE.MathUtils.smoothstep(i, 9.6, 9.98);
     const on = a * b;
     if (on < 0.004) {
       gl.clippingPlanes = [];
       return;
     }
-    // Sweep from just above the roof (8.4 m) down to the first-floor slab
-    // (4.0 m). Stopping at the slab is deliberate: below that the plane also
-    // removes the ground, the driveway and the terrace, and the shot goes empty.
-    plane.constant = 8.4 - 4.4 * on;
+    // sweep from above the roof (6.6 m) down to 2.4 m — low enough that the
+    // section takes the floor slab with it and you get a real plan, not a lid
+    plane.constant = 6.6 - 4.2 * on;
     gl.clippingPlanes = [plane];
   });
 
@@ -432,92 +249,82 @@ function SectionPlane({ scroll }: { scroll: { current: Journey } }) {
 }
 
 function Interior({
-  rig,
+  build,
   lights,
   gate,
   curtains,
-  time,
   cut,
   scroll,
   onPick,
 }: {
-  rig: Rig;
+  build: VillaBuild;
   lights: Record<RoomKey, boolean>;
   gate: boolean;
   curtains: boolean;
-  time: TimeKey;
   cut: boolean;
   scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
 }) {
   const hover = useRef(false);
+  const clock = useRef(0);
 
   useFrame((_, dt) => {
-    const k = 1 - Math.pow(0.0008, Math.min(dt, 0.05));
+    clock.current += dt;
+    const k = 1 - Math.pow(0.0012, Math.min(dt, 0.06));
 
-    // room fixtures
     for (const r of ROOMS) {
       const on = lights[r.key];
-      for (const m of rig.fixtureMats[r.key]) {
-        m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, on ? 3.4 : 0.02, k);
+      for (const m of build.rooms[r.key].fixtures) {
+        m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, on ? 2.4 : 0.02, k);
       }
-      for (const l of rig.lights[r.key]) {
-        l.intensity = THREE.MathUtils.lerp(l.intensity, on ? 22 : 0, k);
+      for (const l of build.rooms[r.key].lights) {
+        l.intensity = THREE.MathUtils.lerp(l.intensity, on ? 12 : 0, k);
+      }
+      for (const m of build.rooms[r.key].leds) {
+        m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, on ? 3 : 0.12, k);
       }
     }
 
-    // switch LEDs
-    for (const m of rig.ledMats) {
-      const anyOn = Object.values(lights).some(Boolean);
-      m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, anyOn ? 3.2 : 0.2, k);
-    }
-
-    // exterior sconces
-    const sc = TIMES[time].sconce;
-    for (const m of rig.sconceMats) {
-      m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, sc, k);
-    }
-
-    // walls ghost out inside the house and for manual x-ray
-    const inHouse = THREE.MathUtils.smoothstep(scroll.current.i, 3.2, 4.4) *
-      (1 - THREE.MathUtils.smoothstep(scroll.current.i, 9.2, 9.9));
-    const ghost = Math.max(cut ? 1 : 0, inHouse);
-    const wallTarget = 1 - ghost * 0.95;
-    for (const m of rig.wallMats) {
-      m.opacity = THREE.MathUtils.lerp(m.opacity, wallTarget, k);
+    // manual x-ray and the automatic cutaway while inside
+    const ghost = Math.max(cut ? 1 : 0, 0);
+    for (const m of build.wallMats) {
+      m.transparent = true;
+      m.opacity = THREE.MathUtils.lerp(m.opacity, 1 - ghost * 0.94, k);
       m.depthWrite = m.opacity > 0.7;
     }
 
-    // garage door lifts as you turn into the drive, and stays up while inside
-    if (rig.gatePivot) {
-      const autoOpen =
-        THREE.MathUtils.smoothstep(scroll.current.i, 1.1, 2.3) *
-        (1 - THREE.MathUtils.smoothstep(scroll.current.i, 8.9, 9.8));
-      const open = Math.max(autoOpen, gate ? 1 : 0);
-      rig.gatePivot.position.y = THREE.MathUtils.lerp(rig.gatePivot.position.y, open * 2.75, k);
+    // front door swings as you reach the foyer leg
+    if (build.doorPivot) {
+      const auto =
+        THREE.MathUtils.smoothstep(scroll.current.i, 1.6, 2.6) *
+        (1 - THREE.MathUtils.smoothstep(scroll.current.i, 3.2, 3.9));
+      build.doorPivot.rotation.y = THREE.MathUtils.lerp(
+        build.doorPivot.rotation.y,
+        -Math.max(auto, gate ? 1 : 0) * 1.35,
+        k,
+      );
     }
 
-    // curtain slide
-    for (const { g, dir } of rig.curtainGroups) {
-      g.position.x = THREE.MathUtils.lerp(g.position.x, curtains ? dir * 0.95 : 0, k);
+    // motorised drapes: settle closed when the scene says so, otherwise open
+    for (const c of build.curtains) {
+      const want = curtains ? c.closed : c.open;
+      if (c.axis === "x") c.g.position.x = THREE.MathUtils.lerp(c.g.position.x, want, k);
+      else c.g.position.z = THREE.MathUtils.lerp(c.g.position.z, want, k);
     }
   });
 
-  const onMove = (e: ThreeEvent<PointerEvent>) => {
+  const pick = (e: ThreeEvent<PointerEvent>) => {
     const r = e.object.userData.room as RoomKey | undefined;
     if (r && !hover.current) {
       hover.current = true;
       document.body.style.cursor = "pointer";
-    } else if (!r && hover.current) {
-      hover.current = false;
-      document.body.style.cursor = "";
     }
   };
 
   return (
     <primitive
-      object={rig.scene}
-      onPointerMove={onMove}
+      object={build.root}
+      onPointerMove={pick}
       onPointerOut={() => {
         hover.current = false;
         document.body.style.cursor = "";
@@ -537,8 +344,8 @@ export default function VillaScene({
   lights,
   gate,
   curtains,
-  time,
   cut,
+  time,
   views,
   scroll,
   onPick,
@@ -552,75 +359,53 @@ export default function VillaScene({
   scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
 }) {
-  const { scene } = useGLTF(MODEL);
-  const rig = useMemo(() => buildRig(scene), [scene]);
+  const build = useMemo(() => buildVilla(), []);
   const t = TIMES[time];
 
   useEffect(() => {
     return () => {
       document.body.style.cursor = "";
+      build.root.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && m.geometry !== undefined && m.geometry !== null) {
+          // shared BOX geometry is reused by hundreds of meshes; only dispose
+          // anything that was created uniquely for this build
+          if (m.geometry.type !== "BoxGeometry") m.geometry.dispose();
+        }
+      });
     };
-  }, []);
+  }, [build]);
 
   return (
     <>
-      <fog attach="fog" args={[t.sky2, 55, 190]} />
+      <fog attach="fog" args={[t.sky2, 40, 160]} />
 
       <SkyDome top={t.sky} bottom={t.sky2} />
-      <EnvDome top={t.sky} bottom={t.sky2} intensity={time === "day" ? 0.45 : 0.5} />
+      <EnvDome top={t.sky} bottom={t.sky2} intensity={time === "day" ? 0.5 : 0.42} />
       <Exposure value={t.exposure} />
-
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0.8, -0.03, -5]} receiveShadow>
-        <planeGeometry args={[260, 260]} />
-        <meshStandardMaterial color={t.ground} roughness={0.96} metalness={0} />
-      </mesh>
 
       <ambientLight intensity={t.ambient} color="#cfd9e8" />
       <hemisphereLight args={[t.sky2, t.ground, t.hemi]} />
-      <directionalLight position={[-t.sun[0] * 0.75, t.sun[1] * 1.3, t.sun[2] * 0.85]} intensity={t.fill} color="#cfe0ff" />
+      <directionalLight position={[-t.sun[0] * 0.7, t.sun[1] * 1.3, t.sun[2] * 0.9]} intensity={t.fill} color="#cfe0ff" />
       <directionalLight
         position={t.sun}
         intensity={t.sunPower}
         color={t.sunColor}
         castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-left={-26}
-        shadow-camera-right={26}
-        shadow-camera-top={26}
-        shadow-camera-bottom={-26}
-        shadow-camera-near={1}
-        shadow-camera-far={90}
-        shadow-bias={-0.0006}
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-left={-16}
+        shadow-camera-right={16}
+        shadow-camera-top={16}
+        shadow-camera-bottom={-16}
+        shadow-camera-near={0.5}
+        shadow-camera-far={60}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.03}
       />
 
-      {LIGHT_POINTS.map((lp, i) => (
-        <pointLight
-          key={i}
-          position={lp.p}
-          color={WARM}
-          intensity={0}
-          distance={9}
-          decay={2}
-          ref={(l) => {
-            if (l && !rig.lights[lp.room].includes(l)) rig.lights[lp.room].push(l);
-          }}
-        />
-      ))}
-
-      <Interior
-        rig={rig}
-        lights={lights}
-        gate={gate}
-        curtains={curtains}
-        time={time}
-        cut={cut}
-        scroll={scroll}
-        onPick={onPick}
-      />
+      <Interior build={build} lights={lights} gate={gate} curtains={curtains} cut={cut} scroll={scroll} onPick={onPick} />
       <ScrollRig scroll={scroll} views={views} />
       <SectionPlane scroll={scroll} />
     </>
   );
 }
-
-useGLTF.preload(MODEL);

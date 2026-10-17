@@ -2,32 +2,37 @@ export type RoomKey =
   | "living"
   | "dining"
   | "kitchen"
-  | "guest"
+  | "foyer"
+  | "bath"
   | "master"
-  | "bedroom2";
+  | "bed2"
+  | "bed3"
+  | "landing";
 
-/** Automation zones — SmartNest lights the house by zone, not by bulb. */
+/** Every room has a ceiling light, a wall switch and a status LED. */
 export const ROOMS: { key: RoomKey; label: string; floor: string }[] = [
-  { key: "living", label: "Living wing", floor: "Ground" },
+  { key: "living", label: "Living", floor: "Ground" },
   { key: "dining", label: "Dining", floor: "Ground" },
   { key: "kitchen", label: "Kitchen", floor: "Ground" },
-  { key: "guest", label: "Garage", floor: "Ground" },
-  { key: "master", label: "Master suite", floor: "First" },
-  { key: "bedroom2", label: "East wing", floor: "First" },
+  { key: "foyer", label: "Foyer", floor: "Ground" },
+  { key: "bath", label: "Bath", floor: "Ground" },
+  { key: "master", label: "Master", floor: "First" },
+  { key: "bed2", label: "Bedroom 2", floor: "First" },
+  { key: "bed3", label: "Bedroom 3", floor: "First" },
+  { key: "landing", label: "Landing", floor: "First" },
 ];
 
-/**
- * Zone anchors, in villa metres. The big villa is 17.2 × 24.7 m on plan with
- * the street at +z; these sit inside each zone so the light reads through the
- * glazing the way a real circuit would.
- */
+/** Ceiling fixture positions, matching buildVilla() exactly. */
 export const LIGHT_POINTS: { room: RoomKey; p: [number, number, number] }[] = [
-  { room: "living", p: [0.0, 2.6, -6.0] },
-  { room: "dining", p: [-4.0, 2.6, -11.0] },
-  { room: "kitchen", p: [4.5, 2.6, -11.0] },
-  { room: "guest", p: [4.3, 2.4, 1.6] },
-  { room: "master", p: [-2.0, 5.6, -9.0] },
-  { room: "bedroom2", p: [4.0, 5.6, -6.0] },
+  { room: "living", p: [-2.2, 3.0, 2.1] },
+  { room: "dining", p: [0.6, 3.0, -1.3] },
+  { room: "kitchen", p: [-2.4, 3.0, -4.2] },
+  { room: "foyer", p: [2.5, 3.0, 2.4] },
+  { room: "bath", p: [3.5, 3.0, -3.8] },
+  { room: "master", p: [-3.2, 6.2, -2.4] },
+  { room: "bed2", p: [3.0, 6.2, -2.8] },
+  { room: "bed3", p: [-3.0, 6.2, 2.7] },
+  { room: "landing", p: [0.9, 6.0, 2.0] },
 ];
 
 export const SWITCH_ROOMS: Record<string, RoomKey> = {};
@@ -69,9 +74,9 @@ export const TIMES: Record<
     label: "Dusk",
     sky: "#20304c",
     sky2: "#b8764e",
-    sun: [30, 9, 20],
-    sunColor: "#ffa869",
-    sunPower: 2.5,
+    sun: [-26, 11, 17],
+    sunColor: "#ffb37a",
+    sunPower: 3.0,
     ambient: 0.26,
     hemi: 0.4,
     fill: 0.34,
@@ -103,6 +108,8 @@ export type View = {
   blurb: string;
   pos: [number, number, number];
   target: [number, number, number];
+  /** Vertical fov for this waypoint; interiors want a wider lens. */
+  fov?: number;
   cut: boolean;
   /** How much scroll this leg of the journey consumes. */
   w: number;
@@ -124,70 +131,76 @@ export const VIEWS: View[] = [
     label: "Approach",
     title: "Walk through it before it's built.",
     blurb:
-      "Twenty-four metres of frontage on a 1,254 sq ft plot line. Keep scrolling — the house lets you in.",
-    pos: [27, 10, 37],
-    target: [0.8, 3.2, -2],
+      "A 3 BHK villa on a 12 by 10 metre footprint. Keep scrolling — the house opens and lets you in.",
+    pos: [15.5, 5.6, 17.6],
+    target: [1, 2.9, 2],
+    fov: 50,
     cut: false,
     w: 1.4,
   },
   {
-    id: "forecourt",
+    id: "driveway",
     n: "02",
-    label: "Forecourt",
-    title: "The gate knows the car.",
+    label: "Driveway",
+    title: "The porch light is already on.",
     blurb:
-      "The driveway lights come up as you approach and the garage door lifts on its own.",
-    pos: [11.5, 3.6, 21],
-    target: [3.6, 2.2, 3],
+      "KNX presence detection picks you up at the gate and runs the arrival scene before you reach the door.",
+    pos: [4.5, 2.4, 12],
+    target: [2.4, 1.7, 5],
+    fov: 60,
     cut: false,
     w: 1.2,
   },
   {
-    id: "threshold",
+    id: "foyer",
     n: "03",
-    label: "Threshold",
-    title: "No key. No remote.",
+    label: "Foyer",
+    title: "You are inside the house.",
     blurb:
-      "A KNX presence sensor sees you, and the house starts its arrival scene before you touch a switch.",
-    pos: [4.6, 1.85, 11],
-    target: [4.3, 1.75, 0],
+      "One touch panel by the door holds every circuit on both floors.",
+    pos: [2.5, 1.65, 6.2],
+    target: [2.4, 1.6, 1.0],
+    fov: 66,
     cut: false,
     w: 1.1,
   },
   {
-    id: "garage",
+    id: "living",
     n: "04",
-    label: "Garage",
-    title: "You are inside the building.",
+    label: "Living",
+    title: "Light that follows the evening.",
     blurb:
-      "Scroll on and the camera walks the ground floor. The far wall is the back of the plot.",
-    pos: [4.4, 1.75, 5.4],
-    target: [2.6, 1.7, -5],
-    cut: true,
-    w: 1.0,
+      "The living room dims to 9% at dusk without anyone touching a wall. Scene, not switch.",
+    pos: [0.9, 1.62, 0.5],
+    target: [-4.0, 1.42, 2.9],
+    fov: 72,
+    cut: false,
+    w: 1.3,
   },
   {
-    id: "ground",
+    id: "dining",
     n: "05",
-    label: "Ground floor",
-    title: "Living, dining, kitchen — one volume.",
+    label: "Dining",
+    title: "One circuit, six chairs.",
     blurb:
-      "The plan is open on purpose. Every circuit in here is addressable from one keypad by the door.",
-    pos: [3.4, 1.75, -1],
-    target: [-1.5, 1.8, -11],
-    cut: true,
-    w: 1.35,
+      "The pendant over the table is on its own channel — dinner dim, breakfast bright.",
+    pos: [2.45, 2.0, -0.6],
+    target: [-0.9, 1.15, -3.3],
+    fov: 74,
+    cut: false,
+    w: 1.1,
   },
   {
-    id: "back",
+    id: "kitchen",
     n: "06",
-    label: "Rear",
-    title: "Fourteen windows, one bus.",
+    label: "Kitchen",
+    title: "The busiest room, quietly managed.",
     blurb:
-      "Every window has a contact sensor. Open one and the air conditioning in that zone drops out.",
-    pos: [0.6, 1.75, -9],
-    target: [4.5, 1.7, -15],
-    cut: true,
+      "Task lighting over the counters, a hood that talks to the extractor, and a keypad by the door.",
+    pos: [-1.9, 1.7, -1.4],
+    target: [-4.6, 1.4, -3.6],
+    fov: 70,
+    cut: false,
     w: 1.2,
   },
   {
@@ -196,11 +209,12 @@ export const VIEWS: View[] = [
     label: "Stair",
     title: "Up to the sleeping floor.",
     blurb:
-      "Landing, master suite, east wing. Goodnight drops all of this at once from the keypad downstairs.",
-    pos: [0.2, 5.0, -6],
-    target: [-3.5, 4.6, -13],
-    cut: true,
-    w: 1.1,
+      "Fourteen risers, a landing, and three bedrooms off it. Goodnight kills all of it at once.",
+    pos: [4.6, 2.2, 4.4],
+    target: [2.4, 4.0, 0.4],
+    fov: 66,
+    cut: false,
+    w: 1.15,
   },
   {
     id: "master",
@@ -209,31 +223,47 @@ export const VIEWS: View[] = [
     title: "One button, and the day is over.",
     blurb:
       "Shutters down, downstairs dark, perimeter armed, thermostat set. You never leave the bed.",
-    pos: [-4.6, 4.85, -7],
-    target: [-5.2, 4.4, -14.5],
-    cut: true,
+    pos: [-1.35, 4.86, 0.1],
+    target: [-4.3, 4.25, -2.9],
+    fov: 72,
+    cut: false,
     w: 1.3,
   },
   {
-    id: "section",
+    id: "bedrooms",
     n: "09",
+    label: "Bedrooms",
+    title: "Every room its own circuit.",
+    blurb:
+      "Bedroom two and three each get a wall switch, a temperature setpoint and their own blind.",
+    pos: [5.1, 4.86, -1.15],
+    target: [1.6, 4.15, -3.7],
+    fov: 70,
+    cut: false,
+    w: 1.2,
+  },
+  {
+    id: "section",
+    n: "10",
     label: "Section",
     title: "Look at it the way we do.",
     blurb:
       "A clipping plane cuts the house in half. This is the drawing the electrician installs from.",
-    pos: [13, 11, 12],
-    target: [0.8, 2.4, -6],
+    pos: [10.4, 9.6, 11.2],
+    target: [0.2, 3.1, -0.6],
+    fov: 44,
     cut: true,
     w: 1.5,
   },
   {
     id: "return",
-    n: "10",
+    n: "11",
     label: "Outside",
     title: "You have walked the whole house.",
     blurb: "",
-    pos: [21, 13.5, 31],
-    target: [0.8, 3, -4],
+    pos: [16, 9, 18],
+    target: [1, 3, 0],
+    fov: 50,
     cut: false,
     w: 1.3,
   },
