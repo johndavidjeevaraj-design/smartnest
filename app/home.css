@@ -591,18 +591,17 @@
 }
 
 /* Curtain veil across the main glazing */
+/* Curtains genuinely dim the interior. This used to be a left-to-right
+   slab that covered 68% of the villa *permanently* — the --curtains
+   variable was read here but never set anywhere, so it always fell back
+   to its default and the house could never be fully seen. */
 .ap-demo-veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    to right,
-    rgba(10, 12, 18, 0.86) 0%,
-    rgba(10, 12, 18, 0.86) calc(var(--curtains, 68) * 1%),
-    transparent calc(var(--curtains, 68) * 1% + 8%)
-  );
-  opacity: 0;
-  transition: opacity 0.5s ease, background 0.5s ease;
+  background: #04080f;
+  opacity: calc((100 - var(--curtains, 68)) * 0.0016);
+  transition: opacity 0.5s ease;
 }
 
 .ap-demo-scan {
@@ -2161,3 +2160,99 @@ html { scroll-padding-top: 66px; }
   transition: transform 0.12s ease, background-color 0.24s ease,
     box-shadow 0.3s ease, background-position 0.45s ease;
 }
+
+/* ── Demo lighting ──────────────────────────────────────────────────────
+   The villa cutaway is a *bright* daylight render (mean luminance ~33%),
+   not a night shot. So the model is inverted from what you would expect:
+   a room that is OFF is covered by a soft shadow, and a room that is ON
+   simply stays at full brightness with a little warm lift.
+
+   An earlier attempt dimmed the whole photograph and added light on top,
+   which is the right instinct for a night photo and the wrong one here —
+   measured change was about 5%, which is why the demo read as inert.
+   Shadows on a bright image are unmissable. */
+
+.ap-demo-veil { display: none; }
+.ap-demo-dark { display: none; }
+
+.ap-room-shade,
+.ap-room-light {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 50%;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* OFF — a soft pool of night sitting over that room and nothing else. */
+.ap-room-shade {
+  z-index: 2;
+  background: radial-gradient(
+    ellipse 46% 44% at 50% 50%,
+    rgba(3, 6, 12, 0.95) 0%,
+    rgba(3, 6, 12, 0.9) 34%,
+    rgba(3, 6, 12, 0.62) 58%,
+    transparent 78%
+  );
+  filter: blur(13px);
+}
+
+/* ON — a warm lift, screen-blended so it adds light to the render rather
+   than veiling it. Deliberately subtle: the brightness is already there,
+   this just tells the eye the room is lit. */
+.ap-room-light {
+  z-index: 3;
+  background: radial-gradient(
+    ellipse 42% 40% at 50% 50%,
+    rgba(255, 236, 202, 0.5) 0%,
+    rgba(255, 198, 128, 0.26) 46%,
+    transparent 74%
+  );
+  filter: blur(9px);
+  mix-blend-mode: screen;
+  will-change: opacity;
+}
+
+.ap-demo-kw { color: #a4e34a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-room-shade,
+  .ap-room-light { transition: none; }
+}
+/* The demo now rewards a tap immediately, so the hint has to say so. */
+/* Sits inside the image, so it reads as an instruction printed on the
+   stage rather than a caption that could belong to anything. */
+.ap-demo-hint {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 7px 12px 7px 8px;
+  border-radius: var(--ap-radius-full);
+  background: rgba(8, 12, 20, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-size: 11.5px;
+  color: var(--ap-text-invert-2);
+}
+
+.ap-demo-hint kbd {
+  padding: 3px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--ap-line-dark);
+  background: rgba(255, 255, 255, 0.06);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--ap-text-invert);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-demo-dark,
+  .ap-room-light { transition: none; }
+}
+

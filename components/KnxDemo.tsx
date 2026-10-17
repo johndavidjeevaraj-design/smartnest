@@ -36,18 +36,29 @@ type RoomId = "master" | "bedroom2" | "living" | "dining" | "kitchen" | "garden"
 type Room = {
   id: RoomId;
   label: string;
+  /** Position of the label chip, as a % of the villa image. */
   x: number;
   y: number;
+  /**
+   * Where that room's light actually falls, as a % of the image. The
+   * label sits above the room it names, so the light pool is nudged down
+   * and outwards to land on the building rather than on the chip.
+   */
+  lx: number;
+  ly: number;
+  /** Light footprint, as a % of the image width / height. */
+  lw: number;
+  lh: number;
 };
 
 const ROOMS: Room[] = [
-  { id: "master", label: "Master Bedroom", x: 21, y: 22 },
-  { id: "bedroom2", label: "Bedroom 2", x: 63, y: 24 },
-  { id: "living", label: "Living Room", x: 43, y: 46 },
-  { id: "dining", label: "Dining", x: 63, y: 48 },
-  { id: "kitchen", label: "Kitchen", x: 30, y: 33 },
-  { id: "garden", label: "Garden", x: 22, y: 70 },
-  { id: "entrance", label: "Entrance", x: 52, y: 68 },
+  { id: "master",   label: "Master Bedroom", x: 21, y: 22, lx: 24, ly: 30, lw: 26, lh: 24 },
+  { id: "bedroom2", label: "Bedroom 2",      x: 63, y: 24, lx: 67, ly: 32, lw: 24, lh: 24 },
+  { id: "living",   label: "Living Room",    x: 43, y: 46, lx: 44, ly: 53, lw: 26, lh: 22 },
+  { id: "dining",   label: "Dining",         x: 63, y: 48, lx: 62, ly: 56, lw: 22, lh: 20 },
+  { id: "kitchen",  label: "Kitchen",        x: 30, y: 33, lx: 33, ly: 40, lw: 22, lh: 18 },
+  { id: "garden",   label: "Garden",         x: 22, y: 70, lx: 24, ly: 78, lw: 34, lh: 26 },
+  { id: "entrance", label: "Entrance",       x: 52, y: 68, lx: 55, ly: 76, lw: 22, lh: 20 },
 ];
 
 type SceneId = "morning" | "away" | "movie" | "night";
@@ -148,7 +159,15 @@ export default function KnxDemo() {
   return (
     <div className="ap-demo-grid">
       {/* ── The villa + hotspots ── */}
-      <div className="ap-demo-stage">
+      <div
+        className="ap-demo-stage"
+        style={
+          {
+            "--curtains": curtains,
+            "--brightness": brightness,
+          } as CSSProperties
+        }
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/smartnest-villa.jpg"
@@ -157,7 +176,44 @@ export default function KnxDemo() {
           height={1067}
         />
 
-        <div className="ap-demo-glow" style={{ opacity: lightsActive ? brightness / 145 : 0 }} aria-hidden />
+        {ROOMS.map((room) => {
+          const isOn = on.includes(room.id);
+          const lit = isOn ? 0.45 + (brightness / 100) * 0.55 : 0;
+          return (
+            <span key={`room-${room.id}`} aria-hidden>
+              {/* A room that is OFF gets its own patch of night. Dimming
+                  the whole photograph instead would leave a lit villa
+                  with green labels on it, which is what made the old
+                  demo feel dead. */}
+              <span
+                className="ap-room-shade"
+                style={{
+                  left: `${room.lx}%`,
+                  top: `${room.ly}%`,
+                  width: `${room.lw}%`,
+                  height: `${room.lh}%`,
+                  // A room that is off is fully shaded. A room that is on
+                  // is shaded in inverse proportion to its brightness —
+                  // which is what makes the brightness slider change the
+                  // picture instead of only the number beside it.
+                  opacity: isOn ? (1 - brightness / 100) * 0.78 : 0.92,
+                }}
+              />
+              {/* ...and a room that is ON gets its own light pool. */}
+              <span
+                className="ap-room-light"
+                style={{
+                  left: `${room.lx}%`,
+                  top: `${room.ly}%`,
+                  width: `${room.lw}%`,
+                  height: `${room.lh}%`,
+                  opacity: lit,
+                }}
+              />
+            </span>
+          );
+        })}
+
         <div className="ap-demo-warm" style={{ opacity: lightsActive ? 1 : 0 }} aria-hidden />
         <div className="ap-demo-veil" style={{ opacity: 1 }} aria-hidden />
         <div className="ap-demo-scan" style={{ opacity: security ? 1 : 0 }} aria-hidden />
@@ -168,9 +224,15 @@ export default function KnxDemo() {
             KNX BUS · LIVE
           </span>
           <span className="ap-demo-readout">
-            {on.length}/{ROOMS.length} ROOMS · <strong>{lightsActive ? `${brightness}%` : "OFF"}</strong>
+            {on.length}/{ROOMS.length} ROOMS ·{" "}
+            <strong>{lightsActive ? `${brightness}%` : "OFF"}</strong> ·{" "}
+            <strong className="ap-demo-kw">{(0.34 + on.length * 0.19 * (brightness / 100 || 0)).toFixed(2)} kW</strong>
           </span>
         </div>
+
+        <p className="ap-demo-hint">
+          <kbd>tap</kbd> a room to switch it
+        </p>
 
         {ROOMS.map((room) => {
           const isOn = on.includes(room.id);
