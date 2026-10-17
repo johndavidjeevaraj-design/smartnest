@@ -327,16 +327,8 @@ export default function TourClient() {
 
         <div className="vt-switches">
           <button type="button" className={gate ? "is-on" : ""} onClick={() => setGate((g) => !g)}>
-            <span>Main gate</span>
+            <span>Garage door</span>
             <b>{gate ? "Open" : "Closed"}</b>
-          </button>
-          <button
-            type="button"
-            className={curtains ? "is-on" : ""}
-            onClick={() => setCurtains((c) => !c)}
-          >
-            <span>Curtains</span>
-            <b>{curtains ? "Open" : "Drawn"}</b>
           </button>
           <button type="button" className={cut ? "is-on" : ""} onClick={() => setWallOverride(!cut)}>
             <span>X-Ray</span>

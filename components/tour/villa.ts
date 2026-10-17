@@ -6,37 +6,31 @@ export type RoomKey =
   | "master"
   | "bedroom2";
 
-/** Room metadata shown in the panel. */
+/** Automation zones — SmartNest lights the house by zone, not by bulb. */
 export const ROOMS: { key: RoomKey; label: string; floor: string }[] = [
-  { key: "living", label: "Living", floor: "Ground" },
+  { key: "living", label: "Living wing", floor: "Ground" },
   { key: "dining", label: "Dining", floor: "Ground" },
   { key: "kitchen", label: "Kitchen", floor: "Ground" },
-  { key: "guest", label: "Guest room", floor: "Ground" },
-  { key: "master", label: "Master", floor: "First" },
-  { key: "bedroom2", label: "Bedroom 2", floor: "First" },
+  { key: "guest", label: "Garage", floor: "Ground" },
+  { key: "master", label: "Master suite", floor: "First" },
+  { key: "bedroom2", label: "East wing", floor: "First" },
 ];
 
 /**
- * Ceiling fixtures, read out of the exported model. Each point is in villa
- * metres — ground-floor ceiling at 2.98 m, first floor at 6.25 m.
+ * Zone anchors, in villa metres. The big villa is 17.2 × 24.7 m on plan with
+ * the street at +z; these sit inside each zone so the light reads through the
+ * glazing the way a real circuit would.
  */
 export const LIGHT_POINTS: { room: RoomKey; p: [number, number, number] }[] = [
-  { room: "living", p: [2.0, 2.86, 0] },
-  { room: "kitchen", p: [5.0, 2.86, 0] },
-  { room: "dining", p: [-1.5, 2.86, 0] },
-  { room: "guest", p: [-4.5, 2.86, 0] },
-  { room: "bedroom2", p: [4.5, 6.13, 0] },
-  { room: "master", p: [-3.5, 6.13, 0] },
+  { room: "living", p: [0.0, 2.6, -6.0] },
+  { room: "dining", p: [-4.0, 2.6, -11.0] },
+  { room: "kitchen", p: [4.5, 2.6, -11.0] },
+  { room: "guest", p: [4.3, 2.4, 1.6] },
+  { room: "master", p: [-2.0, 5.6, -9.0] },
+  { room: "bedroom2", p: [4.0, 5.6, -6.0] },
 ];
 
-export const SWITCH_ROOMS: Record<string, RoomKey> = {
-  SWITCH_LIVING_MAIN: "living",
-  SWITCH_DINING: "dining",
-  SWITCH_KITCHEN: "kitchen",
-  SWITCH_GUEST_BEDROOM: "guest",
-  SWITCH_MASTER_BEDROOM: "master",
-  SWITCH_BEDROOM_2: "bedroom2",
-};
+export const SWITCH_ROOMS: Record<string, RoomKey> = {};
 
 export type TimeKey = "day" | "dusk" | "night";
 
@@ -61,40 +55,40 @@ export const TIMES: Record<
     label: "Day",
     sky: "#bcd9f2",
     sky2: "#e8f1fa",
-    sun: [24, 27, 21],
+    sun: [26, 30, 24],
     sunColor: "#fff7ea",
-    sunPower: 2.1,
-    ambient: 0.26,
-    hemi: 0.5,
-    fill: 0.28,
+    sunPower: 2.6,
+    ambient: 0.34,
+    hemi: 0.7,
+    fill: 0.34,
     ground: "#6b6350",
     sconce: 0.12,
-    exposure: 0.92,
+    exposure: 0.94,
   },
   dusk: {
     label: "Dusk",
     sky: "#20304c",
     sky2: "#b8764e",
-    sun: [27, 8.5, 17],
+    sun: [30, 9, 20],
     sunColor: "#ffa869",
-    sunPower: 2.4,
-    ambient: 0.22,
-    hemi: 0.34,
+    sunPower: 2.5,
+    ambient: 0.26,
+    hemi: 0.4,
     fill: 0.34,
     ground: "#33291c",
     sconce: 3.4,
-    exposure: 1.12,
+    exposure: 1.1,
   },
   night: {
     label: "Night",
     sky: "#05080f",
     sky2: "#111c2e",
-    sun: [-14, 20, 17],
+    sun: [-16, 22, 18],
     sunColor: "#9dbdff",
     sunPower: 0.9,
     ambient: 0.16,
     hemi: 0.2,
-    fill: 0.28,
+    fill: 0.26,
     ground: "#140f0a",
     sconce: 3.8,
     exposure: 1.2,
@@ -119,21 +113,20 @@ export const VIEWS: View[] = [
     label: "Arrival",
     title: "It starts at the gate.",
     blurb:
-      "The gate knows the car. It opens before you reach for a remote — and closes behind you.",
-    pos: [11.5, 8.4, 27],
-    target: [-0.6, 3.4, 4],
+      "Twenty-four metres of frontage. The garage knows the car, the path lights come up, and the house is already awake.",
+    pos: [17, 7.6, 25],
+    target: [0.8, 3.2, -2],
     cut: false,
   },
   {
-    id: "hero",
+    id: "house",
     n: "02",
     label: "The house",
-    title: "Every room, on one keypad.",
+    title: "Two storeys, one system.",
     blurb:
-      "Six rooms, one system. Drag to walk around it — everything you can see is controllable.",
-
-    pos: [11.5, 15.5, 21],
-    target: [0, 2.2, 0],
+      "Ground floor for living, first floor for sleeping, a wraparound terrace between them. Everything below it is yours to switch.",
+    pos: [21, 16.5, 22],
+    target: [0.8, 2.4, -6],
     cut: true,
   },
   {
@@ -142,9 +135,9 @@ export const VIEWS: View[] = [
     label: "Living",
     title: "Light that follows the evening.",
     blurb:
-      "Scenes, not switches. The living room dims to 9% at dusk without anyone touching a wall.",
-    pos: [11.5, 9.1, 10.2],
-    target: [1.5, 1.4, 1.2],
+      "Scenes, not switches. The living wing drops to 9% at dusk without anyone touching a wall.",
+    pos: [-16, 6.5, 14],
+    target: [-1, 2.2, -6],
     cut: true,
   },
   {
@@ -153,9 +146,9 @@ export const VIEWS: View[] = [
     label: "Kitchen",
     title: "The busiest room, quietly managed.",
     blurb:
-      "Task lighting over the counters, a hood that talks to the extractor, and a keypad by the door.",
-    pos: [13.6, 9.1, 6.9],
-    target: [3.6, 1.4, -2.1],
+      "Task lighting over the counters, a hood that talks to the extractor, and a panel by the door.",
+    pos: [19, 7.5, 10],
+    target: [4.5, 2.0, -10],
     cut: true,
   },
   {
@@ -165,8 +158,8 @@ export const VIEWS: View[] = [
     title: "One button, and the day is over.",
     blurb:
       "Goodnight drops the shutters, kills the lights downstairs, arms the perimeter and sets the thermostat.",
-    pos: [6.7, 12.2, 7.4],
-    target: [-3.3, 4.5, -1.6],
+    pos: [-18, 13.5, 12],
+    target: [-2, 5.4, -8],
     cut: true,
   },
   {
@@ -175,9 +168,9 @@ export const VIEWS: View[] = [
     label: "The plan",
     title: "Look at it the way we do.",
     blurb:
-      "Walls go transparent so you can see the whole system at once. This is the drawing the electrician installs from.",
-    pos: [0.5, 26, 13],
-    target: [0, 1.2, -0.6],
+      "Walls go transparent so you can see the whole system at once — the drawing the electrician installs from.",
+    pos: [1, 40, 14],
+    target: [1, 1, -5],
     cut: true,
   },
 ];

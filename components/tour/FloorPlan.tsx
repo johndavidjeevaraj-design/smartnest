@@ -2,7 +2,7 @@
 
 import { FIRST_WALLS, GROUND_WALLS, PLAN_ROOMS, type PlanRoom } from "./plan";
 
-const VB = { x: -7.6, y: -5.6, w: 15.2, h: 12.2 };
+const VB = { x: -9.5, y: -17.6, w: 20.5, h: 27.4 };
 
 export default function FloorPlan({
   floor,
@@ -78,32 +78,12 @@ export default function FloorPlan({
                   onSelect(r);
                 }
               }}
-              aria-label={`${r.label}, ${Math.round((r.x1 - r.x0) * (r.z1 - r.z0))} square metres`}
+              aria-label={r.label}
             >
-              <rect
-                x={r.x0}
-                y={r.z0}
-                width={r.x1 - r.x0}
-                height={r.z1 - r.z0}
-                rx={0.06}
-              />
-              <text
-                x={(r.x0 + r.x1) / 2}
-                y={(r.z0 + r.z1) / 2}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="vt-plan-label"
-              >
+              <circle cx={r.cx} cy={r.cz} r={on ? 0.62 : 0.46} className="vt-zone-dot" />
+              <circle cx={r.cx} cy={r.cz} r={0.16} className="vt-zone-core" />
+              <text x={r.cx} y={r.cz + 1.15} textAnchor="middle" className="vt-plan-label">
                 {r.label}
-              </text>
-              <text
-                x={(r.x0 + r.x1) / 2}
-                y={(r.z0 + r.z1) / 2 + 0.62}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="vt-plan-area"
-              >
-                {Math.round((r.x1 - r.x0) * (r.z1 - r.z0))} m²
               </text>
             </g>
           );
@@ -112,21 +92,22 @@ export default function FloorPlan({
         {walls.map((w, i) => (
           <rect
             key={i}
-            className="vt-plan-wall"
+            className={w.kind === "mass" ? "vt-plan-wall" : "vt-plan-slab"}
             x={w.x0}
             y={w.z0}
-            width={Math.max(0.04, w.x1 - w.x0)}
-            height={Math.max(0.04, w.z1 - w.z0)}
+            width={w.x1 - w.x0}
+            height={w.z1 - w.z0}
           />
         ))}
 
-        <text x={-7.4} y={5.75} className="vt-plan-note">
-          front of house
+        <text x={-9} y={8.3} className="vt-plan-note">
+          street
         </text>
       </svg>
 
       <p className="vt-plan-foot">
-        Walls measured from the model. Pick a room to walk into it.
+        Massing measured from the model. Dots are the automation zones — pick one
+        to walk to it.
       </p>
     </div>
   );

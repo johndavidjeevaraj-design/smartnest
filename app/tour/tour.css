@@ -998,3 +998,21 @@
     display: none;
   }
 }
+
+/* zone markers on the massing plan */
+.vt-plan-wall { fill: #7b8799; }
+.vt-plan-slab { fill: rgba(123, 135, 153, 0.35); }
+.vt-zone-dot {
+  fill: rgba(79, 212, 245, 0.18);
+  stroke: #4fd4f5;
+  stroke-width: 0.06;
+  transition: fill 0.2s, r 0.2s;
+}
+.vt-zone-core { fill: #a4e34a; }
+.vt-plan-room { cursor: pointer; }
+.vt-plan-room:hover .vt-zone-dot { fill: rgba(79, 212, 245, 0.34); }
+.vt-plan-room.is-on .vt-zone-dot {
+  fill: rgba(164, 227, 74, 0.35);
+  stroke: #a4e34a;
+}
+.vt-plan-room.is-on .vt-plan-label { fill: #a4e34a; }

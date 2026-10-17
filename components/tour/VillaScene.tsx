@@ -24,7 +24,7 @@ import {
   type View,
 } from "./villa";
 
-const MODEL = "/models/smartnest-luxury-indian-villa.glb";
+const MODEL = "/models/smartnest-3bhk-villa.glb";
 
 const ROOM_PREFIX: [string, RoomKey][] = [
   ["LIVING", "living"],
@@ -113,6 +113,18 @@ function buildRig(root: THREE.Object3D): Rig {
         }
       }
 
+      for (const key of ["map", "normalMap", "roughnessMap", "metalnessMap"] as const) {
+        const tex = (mm as unknown as Record<string, THREE.Texture | null>)[key];
+        if (tex) tex.anisotropy = 8;
+      }
+      if (mm?.name === "m.GlassReal") {
+        mm.transparent = true;
+        mm.opacity = 0.34;
+        mm.metalness = 0.1;
+        mm.roughness = 0.06;
+        mm.color = new THREE.Color("#b9d4dc");
+        mm.depthWrite = false;
+      }
       if (mm?.name === "SN_Microcement") {
         mm.color.multiplyScalar(0.7);
         mm.roughness = 0.85;
@@ -146,7 +158,7 @@ function buildRig(root: THREE.Object3D): Rig {
         mat.emissiveIntensity = 0.1;
         mesh.material = mat;
         sconceMats.push(mat);
-      } else if (/^(GF|FF)_(Wall|Front|Partition)|^GLAZING_/.test(name)) {
+      } else if (/^wall/i.test(name)) {
         const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
         mat.transparent = true;
         mesh.material = mat;
@@ -160,15 +172,15 @@ function buildRig(root: THREE.Object3D): Rig {
     }
     if (name in SWITCH_ROOMS) o.userData.room = SWITCH_ROOMS[name];
 
-    if (name.startsWith("GATE_Slat")) gateSlats.push(o);
-    if (name.startsWith("CURTAIN_LIVING")) curtains.push(o);
+    if (name.startsWith("garagedoor")) gateSlats.push(o);
+
   });
 
-  // ── gate: one hinge at the left post ──────────────────────────────────
+  // ── garage door: slides up into the lintel ────────────────────────────
   let gatePivot: THREE.Group | null = null;
   if (gateSlats.length) {
     gatePivot = new THREE.Group();
-    gatePivot.position.set(-4.8, 0, 12);
+    gatePivot.position.set(0, 0, 0);
     root.add(gatePivot);
     root.updateMatrixWorld(true);
     for (const s of gateSlats) gatePivot.attach(s);
@@ -374,9 +386,9 @@ function Interior({
 
     // gate swing
     if (rig.gatePivot) {
-      rig.gatePivot.rotation.y = THREE.MathUtils.lerp(
-        rig.gatePivot.rotation.y,
-        gate ? -Math.PI * 0.52 : 0,
+      rig.gatePivot.position.y = THREE.MathUtils.lerp(
+        rig.gatePivot.position.y,
+        gate ? 2.7 : 0,
         k,
       );
     }
@@ -453,6 +465,11 @@ export default function VillaScene({
       <SkyDome top={t.sky} bottom={t.sky2} />
       <EnvDome top={t.sky} bottom={t.sky2} intensity={time === "day" ? 0.45 : 0.5} />
       <Exposure value={t.exposure} />
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0.8, -0.03, -5]} receiveShadow>
+        <planeGeometry args={[260, 260]} />
+        <meshStandardMaterial color={t.ground} roughness={0.96} metalness={0} />
+      </mesh>
 
       <ambientLight intensity={t.ambient} color="#cfd9e8" />
       <hemisphereLight args={[t.sky2, t.ground, t.hemi]} />
