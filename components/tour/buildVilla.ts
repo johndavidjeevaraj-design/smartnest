@@ -143,14 +143,6 @@ function wall(
   return g;
 }
 
-function glassPane(parent: THREE.Object3D, w: number, h: number, x: number, y: number, z: number, horiz: boolean) {
-  const g = new THREE.Mesh(BOX, MAT.glass);
-  g.scale.set(horiz ? w : 0.04, h, horiz ? 0.04 : w);
-  g.position.set(x, y, z);
-  g.name = "glass";
-  parent.add(g);
-}
-
 /** A framed window: jambs, head, sill, mullions, glass. `rotY` = 0 on an
  *  x-running wall, PI/2 on a z-running wall. */
 function windowUnit(

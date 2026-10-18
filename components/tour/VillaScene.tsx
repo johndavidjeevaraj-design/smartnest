@@ -14,9 +14,7 @@ import { useThree } from "@react-three/fiber";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { buildVilla, type VillaBuild } from "./buildVilla";
-import { LIGHT_POINTS, ROOMS, TIMES, type RoomKey, type TimeKey, type View } from "./villa";
-
-const WARM = new THREE.Color("#ffd0a4");
+import { ROOMS, TIMES, type RoomKey, type TimeKey, type View } from "./villa";
 
 export type Journey = { i: number };
 
@@ -160,10 +158,6 @@ function ScrollRig({ scroll, views }: { scroll: { current: Journey }; views: Vie
 
   const aspect = size.width / Math.max(1, size.height);
   const bonus = aspect < 0.85 ? 14 : aspect < 1.15 ? 7 : 0;
-  const aspectRef = useRef(aspect);
-  aspectRef.current = aspect;
-  const bonusRef = useRef(bonus);
-  bonusRef.current = bonus;
 
   const tmp = useMemo(
     () => ({
@@ -191,7 +185,7 @@ function ScrollRig({ scroll, views }: { scroll: { current: Journey }; views: Vie
     const fovA = views[Math.min(a, n)].fov ?? 58;
     const fovB = views[Math.min(a + 1, n)].fov ?? 58;
     const cam = camera as THREE.PerspectiveCamera;
-    const want = THREE.MathUtils.lerp(fovA, fovB, f) + bonusRef.current;
+    const want = THREE.MathUtils.lerp(fovA, fovB, f) + bonus;
     if (Math.abs(cam.fov - want) > 0.01) {
       cam.fov = want;
       cam.updateProjectionMatrix();

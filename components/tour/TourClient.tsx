@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ROOMS, TIMES, VIEWS, TOTAL_WEIGHT, indexToProgress, progressToIndex, type RoomKey, type TimeKey } from "./villa";
-import { PLAN_ROOMS, type PlanRoom } from "./plan";
+import type { PlanRoom } from "./plan";
+import type Lenis from "lenis";
 import FloorPlan from "./FloorPlan";
 
 const VillaCanvas = dynamic(() => import("./VillaCanvas"), { ssr: false });
@@ -95,6 +96,7 @@ export default function TourClient() {
   // driven every frame without re-rendering React sixty times a second.
   const journey = useRef({ i: 0 });
   const target = useRef(0);
+  const lenisRef = useRef<Lenis | null>(null);
 
   const [nogl] = useState(() => {
     if (typeof document === "undefined") return false;
@@ -137,108 +139,111 @@ export default function TourClient() {
     };
   }, [intro, planOpen]);
 
-  // ── the scroll engine ──────────────────────────────────────────────────
+  // ── smooth scroll + scroll-linked camera ───────────────────────────────
   useEffect(() => {
-    let raf = 0;
+    let disposed = false;
+    let disposeEngine: (() => void) | null = null;
 
-    const reduced =
-      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const setup = async () => {
+      const [{ default: LenisEngine }, { gsap }, { ScrollTrigger }] = await Promise.all([
+        import("lenis"),
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (disposed) return;
 
-    const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      gsap.registerPlugin(ScrollTrigger);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const lenis = new LenisEngine({
+        autoRaf: false,
+        lerp: reduced ? 1 : 0.085,
+        duration: reduced ? 0 : 1.05,
+        smoothWheel: !reduced,
+        syncTouch: !reduced,
+        wheelMultiplier: 0.9,
+        touchMultiplier: 1.15,
+      });
+      lenisRef.current = lenis;
 
-    const read = () => {
-      const p = Math.min(Math.max(window.scrollY / maxScroll(), 0), 1);
-      target.current = progressToIndex(p);
+      const updateTarget = (progress: number) => {
+        target.current = progressToIndex(Math.min(Math.max(progress, 0), 1));
+      };
+      const initialMax = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      updateTarget(window.scrollY / initialMax);
+      journey.current.i = target.current;
+
+      let prev = performance.now();
+      let lastNear = -1;
+      let lastRail = 0;
+      const tick = (now = performance.now()) => {
+        const dt = Math.min((now - prev) / 1000, 0.25);
+        prev = now;
+        // Lenis supplies the wheel/touch easing; this small camera settle keeps
+        // the 3D rig feeling weighted without doubling the scroll duration.
+        const a = reduced ? 1 : 1 - Math.pow(1 - 0.14, dt * 60);
+        journey.current.i += (target.current - journey.current.i) * a;
+        if (Math.abs(target.current - journey.current.i) < 0.0008) journey.current.i = target.current;
+        const last = VIEWS.length - 1;
+        if (!Number.isFinite(journey.current.i)) journey.current.i = target.current;
+        journey.current.i = Math.min(Math.max(journey.current.i, 0), last);
+
+        const near = Math.round(journey.current.i);
+        if (near !== lastNear) {
+          lastNear = near;
+          setChapter(near);
+        }
+        if (now - lastRail > 90) {
+          lastRail = now;
+          setRailP(journey.current.i / (VIEWS.length - 1));
+        }
+      };
+
+      const scrollTrigger = ScrollTrigger.create({
+        start: 0,
+        end: "max",
+        onUpdate: (self) => updateTarget(self.progress),
+        onRefresh: (self) => updateTarget(self.progress),
+      });
+      const onLenisScroll = () => ScrollTrigger.update();
+      lenis.on("scroll", onLenisScroll);
+      const onGsapTick = (time: number) => lenis.raf(time * 1000);
+      gsap.ticker.lagSmoothing(0);
+      gsap.ticker.add(onGsapTick);
+      ScrollTrigger.refresh();
+      scrollTrigger.update();
+
+      const uiTimer = window.setInterval(tick, 33);
+      disposeEngine = () => {
+        window.clearInterval(uiTimer);
+        scrollTrigger.kill();
+        lenis.off("scroll", onLenisScroll);
+        lenis.destroy();
+        gsap.ticker.remove(onGsapTick);
+        gsap.ticker.lagSmoothing(500, 33);
+        if (lenisRef.current === lenis) lenisRef.current = null;
+      };
     };
 
-    let prev = performance.now();
-    let lastNear = -1;
-    let lastRail = 0;
-    const tick = (now = performance.now()) => {
-      // Exponential smoothing toward the scroll-derived index. The rate is
-      // expressed per 60th of a second and converted with the real frame delta,
-      // so a slow machine converges in the same wall-clock time instead of
-      // crawling — frame-rate-dependent easing is how a camera gets stuck.
-      const dt = Math.min((now - prev) / 1000, 0.25);
-      prev = now;
-      const a = reduced ? 1 : 1 - Math.pow(1 - 0.055, dt * 60);
-      journey.current.i += (target.current - journey.current.i) * a;
-      if (Math.abs(target.current - journey.current.i) < 0.0008) {
-        journey.current.i = target.current;
-      }
-      const last = VIEWS.length - 1;
-      if (!Number.isFinite(journey.current.i)) journey.current.i = target.current;
-      journey.current.i = Math.min(Math.max(journey.current.i, 0), last);
-
-      const near = Math.round(journey.current.i);
-      if (near !== lastNear) {
-        lastNear = near;
-        setChapter(near);
-      }
-      if (now - lastRail > 90) {
-        lastRail = now;
-        setRailP(journey.current.i / (VIEWS.length - 1));
-      }
-    };
-
-    read();
-    journey.current.i = target.current;
-    window.addEventListener("scroll", read, { passive: true });
-    window.addEventListener("resize", read);
-
-    // Deliberately NOT requestAnimationFrame. The timeline is UI state, and rAF
-    // is throttled by whatever the WebGL loop is doing — on a weak GPU a 1.5 fps
-    // scene would leave the overlays a chapter behind for eight seconds. A plain
-    // 30 Hz timer keeps the interface honest; the camera still reads the same ref
-    // from inside rAF, so motion stays frame-synced on machines that can draw.
-    raf = window.setInterval(tick, 33);
-
+    void setup();
     return () => {
-      window.removeEventListener("scroll", read);
-      window.removeEventListener("resize", read);
-      window.clearInterval(raf);
+      disposed = true;
+      disposeEngine?.();
     };
   }, []);
 
-  /**
-   * Chapter jumps are animated in wall-clock time, not by the browser's
-   * smooth-scroll. The page is ~12,000px tall, and on a slow GPU the native
-   * animation advances a frame at a time — a tap on "Master" would still be
-   * travelling several seconds later. 620ms is 620ms on any machine.
-   */
-  const jump = useRef(0);
+  /** Chapter jumps use Lenis' own cancellable easing, with a native fallback
+   * only for the brief window before the async scroll engine is ready. */
   const smoothTo = useCallback((top: number) => {
-    const html = document.documentElement;
-    const from = window.scrollY;
-    const delta = top - from;
-    const id = ++jump.current;
-    if (Math.abs(delta) < 2) return;
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const dur = reduced ? 1 : 620;
-    const t0 = performance.now();
-    const prev = html.style.scrollBehavior;
-    html.style.scrollBehavior = "auto";
-    const step = () => {
-      if (id !== jump.current) return;
-      const k = Math.min(1, (performance.now() - t0) / dur);
-      window.scrollTo(0, from + delta * (1 - Math.pow(1 - k, 3)));
-      if (k < 1) requestAnimationFrame(step);
-      else html.style.scrollBehavior = prev;
-    };
-    requestAnimationFrame(step);
-  }, []);
-
-  // a wheel or a drag beats a programmatic jump
-  useEffect(() => {
-    const cancel = () => {
-      jump.current++;
-    };
-    window.addEventListener("wheel", cancel, { passive: true });
-    window.addEventListener("touchstart", cancel, { passive: true });
-    return () => {
-      window.removeEventListener("wheel", cancel);
-      window.removeEventListener("touchstart", cancel);
-    };
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(top, {
+        immediate: reduced,
+        duration: reduced ? 0 : 1.05,
+        easing: (t) => 1 - Math.pow(1 - t, 4),
+      });
+    } else {
+      window.scrollTo(0, top);
+    }
   }, []);
 
   const goChapter = useCallback(
