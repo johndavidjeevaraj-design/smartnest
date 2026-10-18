@@ -276,11 +276,13 @@ export default function TourClient() {
   }, [goChapter]);
 
   const onPick = useCallback((r: RoomKey) => {
+    setActiveRoom(r);
     setLights((l) => ({ ...l, [r]: !l[r] }));
     setScene(null);
   }, []);
 
   const toggle = (r: RoomKey) => {
+    setActiveRoom(r);
     setLights((l) => ({ ...l, [r]: !l[r] }));
     setScene(null);
   };
@@ -300,9 +302,13 @@ export default function TourClient() {
   const onPlanRoom = (r: PlanRoom) => {
     setPlanOpen(false);
     setActiveRoom(r.id);
+    goChapter(r.chapter);
   };
 
   const onCount = useMemo(() => Object.values(lights).filter(Boolean).length, [lights]);
+  const activeZone = ROOMS.find((r) => r.key === activeRoom) ?? null;
+  const groundActive = chapter >= 2 && chapter <= 6;
+  const firstActive = chapter >= 7 && chapter <= 8;
   const view = VIEWS[Math.min(Math.max(chapter || 0, 0), VIEWS.length - 1)] ?? VIEWS[0];
 
   return (
@@ -330,15 +336,15 @@ export default function TourClient() {
         {intro && (
           <div className="vt-intro">
             <div className="vt-intro-inner">
-              <span className="vt-intro-kicker">SmartNest · KNX Walkthrough</span>
-              <h1 className="vt-intro-title">Experience Intelligent Living.</h1>
+              <span className="vt-intro-kicker">SmartNest · KNX Home Experience</span>
+              <h1 className="vt-intro-title">Welcome to a home that responds.</h1>
               <p className="vt-intro-sub">
-                Scroll to move through the villa — from the arrival court, through the
-                living spaces, and upstairs to the private suite.
+                Move through a connected 3BHK villa. Explore the rooms, then see how lighting,
+                motorised blinds and comfort scenes work together through KNX.
               </p>
               <div className="vt-intro-actions">
                 <button type="button" className="vt-intro-primary" onClick={() => setIntro(false)}>
-                  Explore the villa
+                  Enter the experience
                 </button>
                 <button
                   type="button"
@@ -351,7 +357,8 @@ export default function TourClient() {
                   View floor plan
                 </button>
               </div>
-              <span className="vt-intro-note">A simulation — no hardware is connected.</span>
+              <div className="vt-intro-cue" aria-hidden="true"><i /> Enter, then scroll or drag to explore</div>
+              <span className="vt-intro-note">KNX HOME · 3 BEDROOMS · 2 FLOORS · INTERACTIVE SIMULATION</span>
             </div>
           </div>
         )}
@@ -365,6 +372,14 @@ export default function TourClient() {
           </Link>
 
           <div className="vt-top-right">
+            <div className="vt-floor-switch" role="group" aria-label="Choose a floor">
+              <button type="button" className={groundActive ? "is-on" : ""} aria-pressed={groundActive} onClick={() => goChapter(3)}>
+                Ground
+              </button>
+              <button type="button" className={firstActive ? "is-on" : ""} aria-pressed={firstActive} onClick={() => goChapter(7)}>
+                First
+              </button>
+            </div>
             <div className="vt-seg" role="group" aria-label="Time of day">
               {(Object.keys(TIMES) as TimeKey[]).map((k) => (
                 <button
@@ -441,6 +456,13 @@ export default function TourClient() {
             <span>Lighting zones</span>
             <b>{onCount} <i>/ {ROOMS.length} active</i></b>
           </div>
+          {activeZone && (
+            <div className="vt-active-zone" aria-live="polite">
+              <span>Selected room</span>
+              <strong>{activeZone.label}</strong>
+              <i>{activeZone.floor === "Ground" ? "GROUND FLOOR" : "FIRST FLOOR"}</i>
+            </div>
+          )}
 
           <div className="vt-scenes" role="group" aria-label="Scenes">
             {SCENES.map((s) => (
@@ -481,8 +503,9 @@ export default function TourClient() {
               <li key={r.key}>
                 <button
                   type="button"
-                  className={lights[r.key] ? "is-on" : ""}
+                  className={`${lights[r.key] ? "is-on" : ""}${activeRoom === r.key ? " is-selected" : ""}`}
                   aria-pressed={lights[r.key]}
+                  aria-current={activeRoom === r.key ? "location" : undefined}
                   onClick={() => toggle(r.key)}
                 >
                   <span className="vt-bulb" aria-hidden />

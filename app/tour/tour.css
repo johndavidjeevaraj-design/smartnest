@@ -1326,3 +1326,104 @@ html:has(.vt-space) * {
 @media (prefers-reduced-motion: reduce) {
   .vt-loader-bar i { animation-duration: 2.5s; }
 }
+
+/* The gallery-inspired layer: floor selection, room focus and entry cue. */
+.vt-floor-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--vt-line);
+  border-radius: 999px;
+  background: rgba(255,255,255,.055);
+  backdrop-filter: blur(12px);
+}
+.vt-floor-switch button {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--vt-dim);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .25s, color .25s;
+}
+.vt-floor-switch button:hover { color: #fff; }
+.vt-floor-switch button.is-on {
+  color: #06120a;
+  background: var(--vt-green);
+}
+.vt-rooms button.is-selected {
+  outline: 1px solid rgba(41,240,196,.22);
+  background: rgba(41,240,196,.07);
+}
+.vt-rooms button.is-selected.is-on {
+  background: rgba(41,240,196,.13);
+}
+.vt-active-zone {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3px 8px;
+  margin: 0 3px 9px;
+  padding: 8px 9px;
+  border: 1px solid rgba(41,240,196,.16);
+  border-radius: 9px;
+  background: linear-gradient(105deg, rgba(41,240,196,.08), rgba(0,168,232,.035));
+}
+.vt-active-zone span {
+  grid-column: 1 / -1;
+  color: var(--vt-dim);
+  font-size: 8px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.vt-active-zone strong {
+  color: var(--vt-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+.vt-active-zone i {
+  color: var(--vt-green);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.vt-intro-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  color: rgba(238,242,248,.72);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+.vt-intro-cue i {
+  width: 1px;
+  height: 17px;
+  background: linear-gradient(var(--vt-green), transparent);
+  animation: vt-cue 1.4s ease-in-out infinite;
+}
+@keyframes vt-cue {
+  50% { transform: translateY(5px); opacity: .45; }
+}
+@media (max-width: 900px) {
+  .vt-floor-switch button { padding: 5px 8px; font-size: 8px; }
+}
+@media (max-width: 460px) {
+  .vt-top-right { gap: 4px; }
+  .vt-floor-switch { gap: 0; padding: 2px; }
+  .vt-floor-switch button { padding: 5px 6px; font-size: 8px; letter-spacing: .04em; }
+  .vt-exit { display: none; }
+  .vt-intro-cue { margin-bottom: 14px; font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-intro-cue i { animation: none; }
+}
