@@ -357,6 +357,7 @@ export default function VillaScene({
   views,
   scroll,
   onPick,
+  onReady,
 }: {
   lights: Record<RoomKey, boolean>;
   brightness: number;
@@ -367,9 +368,15 @@ export default function VillaScene({
   views: View[];
   scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
+  onReady: () => void;
 }) {
   const build = useMemo(() => buildVilla(), []);
   const t = TIMES[time];
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(onReady);
+    return () => cancelAnimationFrame(frame);
+  }, [onReady]);
 
   useEffect(() => {
     return () => {

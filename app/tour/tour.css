@@ -1302,3 +1302,27 @@ html:has(.vt-space) * {
   background: var(--vt-green);
   box-shadow: 0 0 0 2px rgba(41,240,196,.25);
 }
+
+/* A procedural villa has no asset-download percentage to wait for. Show an
+   indeterminate bar until the scene mounts, then clear the veil immediately. */
+.vt-loader.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+.vt-loader-bar i {
+  width: 34%;
+  transform: translateX(-110%);
+  animation: vt-loader-sweep 1.15s cubic-bezier(.45,0,.55,1) infinite;
+}
+.vt-loader.is-leaving .vt-loader-bar i {
+  width: 100%;
+  transform: none;
+  animation: none;
+  transition: width .35s ease;
+}
+@keyframes vt-loader-sweep {
+  to { transform: translateX(430%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-loader-bar i { animation-duration: 2.5s; }
+}

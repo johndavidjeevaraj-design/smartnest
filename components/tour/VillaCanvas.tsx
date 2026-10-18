@@ -14,6 +14,7 @@ export default function VillaCanvas({
   cut,
   scroll,
   onPick,
+  onReady,
 }: {
   lights: Record<RoomKey, boolean>;
   brightness: number;
@@ -23,6 +24,7 @@ export default function VillaCanvas({
   cut: boolean;
   scroll: { current: Journey };
   onPick: (r: RoomKey) => void;
+  onReady: () => void;
 }) {
   return (
     <Canvas
@@ -43,6 +45,7 @@ export default function VillaCanvas({
           views={VIEWS}
           scroll={scroll}
           onPick={onPick}
+          onReady={onReady}
         />
       </Suspense>
     </Canvas>

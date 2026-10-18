@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useProgress } from "@react-three/drei";
 import { ROOMS, TIMES, VIEWS, TOTAL_WEIGHT, indexToProgress, progressToIndex, type RoomKey, type TimeKey } from "./villa";
 import { PLAN_ROOMS, type PlanRoom } from "./plan";
 import FloorPlan from "./FloorPlan";
@@ -43,22 +42,23 @@ const SCENE_STATE: Record<SceneKey, { lights: Partial<Record<RoomKey, boolean>>;
   away: { lights: {}, time: "night", curtains: true, brightness: 28 },
 };
 
-function Loader() {
-  const { progress, active } = useProgress();
-  const [stuck, setStuck] = useState(false);
+function Loader({ ready }: { ready: boolean }) {
+  const [visible, setVisible] = useState(true);
   useEffect(() => {
-    const t = setTimeout(() => setStuck(true), 30000);
-    return () => clearTimeout(t);
-  }, []);
-  if (stuck || (!active && progress >= 100)) return null;
+    if (!ready) {
+      const fallback = window.setTimeout(() => setVisible(false), 12000);
+      return () => window.clearTimeout(fallback);
+    }
+    const hide = window.setTimeout(() => setVisible(false), 520);
+    return () => window.clearTimeout(hide);
+  }, [ready]);
+  if (!visible) return null;
   return (
-    <div className="vt-loader">
+    <div className={`vt-loader${ready ? " is-leaving" : ""}`} aria-live="polite">
       <div className="vt-loader-inner">
-        <span className="vt-loader-k">Building the villa</span>
-        <div className="vt-loader-bar">
-          <i style={{ width: `${Math.max(6, progress)}%` }} />
-        </div>
-        <span className="vt-loader-n">{Math.round(progress)}%</span>
+        <span className="vt-loader-k">{ready ? "Villa ready" : "Preparing 3D villa"}</span>
+        <div className="vt-loader-bar"><i /></div>
+        <span className="vt-loader-n">{ready ? "READY" : "3D"}</span>
       </div>
     </div>
   );
@@ -87,6 +87,7 @@ export default function TourClient() {
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
   const [chapter, setChapter] = useState(0);
   const [intro, setIntro] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
   const [hint, setHint] = useState(true);
   const [railP, setRailP] = useState(0);
 
@@ -106,6 +107,7 @@ export default function TourClient() {
   });
 
   const cut = wallOverride ?? false;
+  const markCanvasReady = useCallback(() => setCanvasReady(true), []);
 
   useEffect(() => {
     let seen = false;
@@ -314,10 +316,11 @@ export default function TourClient() {
             cut={cut}
             scroll={journey}
             onPick={onPick}
+            onReady={markCanvasReady}
           />
         </div>
 
-        <Loader />
+        <Loader ready={canvasReady || nogl} />
 
         {intro && (
           <div className="vt-intro">
