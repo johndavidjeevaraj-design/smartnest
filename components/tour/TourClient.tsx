@@ -11,6 +11,14 @@ import FloorPlan from "./FloorPlan";
 const VillaCanvas = dynamic(() => import("./VillaCanvas"), { ssr: false });
 
 type SceneKey = "welcome" | "relax" | "movie" | "away";
+type SystemKey = "lighting" | "climate" | "shading" | "access";
+
+const HOME_SYSTEMS: { key: SystemKey; no: string; title: string; kicker: string; copy: string; chapter: number }[] = [
+  { key: "lighting", no: "01", title: "Lighting & scenes", kicker: "KNX LIGHTING", copy: "Dim each room independently or set a whole-home mood with one touch.", chapter: 3 },
+  { key: "climate", no: "02", title: "Climate comfort", kicker: "ROOM-BY-ROOM", copy: "Keep every space comfortable with coordinated temperature control.", chapter: 5 },
+  { key: "shading", no: "03", title: "Motorised shading", kicker: "DAYLIGHT CONTROL", copy: "Move the villa’s curtains together or let a scene set the mood.", chapter: 7 },
+  { key: "access", no: "04", title: "Entry & security", kicker: "SMART ACCESS", copy: "Manage the front door and switch the home into Away mode.", chapter: 2 },
+];
 
 const SCENES: { key: SceneKey; label: string; note: string }[] = [
   { key: "welcome", label: "Welcome", note: "Lighting on, blinds open" },
@@ -78,11 +86,13 @@ export default function TourClient() {
     landing: false,
   });
   const [brightness, setBrightness] = useState(72);
+  const [setPoint, setSetPoint] = useState(22);
   const [doorOpen, setDoorOpen] = useState(false);
   const [curtains, setCurtains] = useState(true);
   const [time, setTime] = useState<TimeKey>("dusk");
   const [wallOverride, setWallOverride] = useState<boolean | null>(null);
   const [scene, setScene] = useState<SceneKey | null>(null);
+  const [systemsOpen, setSystemsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [planFloor, setPlanFloor] = useState<"g" | "f">("g");
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
@@ -133,11 +143,11 @@ export default function TourClient() {
   // scrolling behind the overlay.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.body.style.overflow = intro || planOpen ? "hidden" : "";
+    document.body.style.overflow = intro || planOpen || systemsOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [intro, planOpen]);
+  }, [intro, planOpen, systemsOpen]);
 
   // ── smooth scroll + scroll-linked camera ───────────────────────────────
   useEffect(() => {
@@ -269,7 +279,10 @@ export default function TourClient() {
       }
       if (e.key.toLowerCase() === "x") setWallOverride((v) => !(v ?? false));
       if (e.key.toLowerCase() === "g") setDoorOpen((g) => !g);
-      if (e.key === "Escape") setPlanOpen(false);
+      if (e.key === "Escape") {
+        setPlanOpen(false);
+        setSystemsOpen(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -395,10 +408,23 @@ export default function TourClient() {
             </div>
             <button
               type="button"
-              className={`vt-plan-btn${planOpen ? " is-on" : ""}`}
-              onClick={() => setPlanOpen((p) => !p)}
+              className={`vt-plan-btn${systemsOpen ? " is-on" : ""}`}
+              onClick={() => {
+                setSystemsOpen((open) => !open);
+                setPlanOpen(false);
+              }}
             >
-              Floor plan
+              KNX systems
+            </button>
+            <button
+              type="button"
+              className={`vt-plan-btn${planOpen ? " is-on" : ""}`}
+              onClick={() => {
+                setPlanOpen((p) => !p);
+                setSystemsOpen(false);
+              }}
+            >
+              Floors
             </button>
             <Link href="/" className="vt-exit">
               Exit
@@ -439,6 +465,52 @@ export default function TourClient() {
             onSelect={onPlanRoom}
             onClose={() => setPlanOpen(false)}
           />
+        )}
+
+        {systemsOpen && (
+          <div
+            className="vt-systems-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vt-systems-title"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setSystemsOpen(false);
+            }}
+          >
+            <section className="vt-systems-dialog">
+              <button type="button" className="vt-systems-close" aria-label="Close KNX systems" onClick={() => setSystemsOpen(false)}>×</button>
+              <div className="vt-systems-heading">
+                <span>SMARTNEST · KNX HOME</span>
+                <h2 id="vt-systems-title">One home. Connected by design.</h2>
+                <p>Explore how the villa’s systems work together, then jump straight into a room.</p>
+              </div>
+              <div className="vt-systems-list">
+                {HOME_SYSTEMS.map((system) => (
+                  <button
+                    type="button"
+                    className="vt-system-card"
+                    key={system.key}
+                    onClick={() => {
+                      setSystemsOpen(false);
+                      if (system.key === "lighting") setActiveRoom("living");
+                      if (system.key === "access") setActiveRoom("foyer");
+                      if (system.key === "shading") setCurtains(false);
+                      goChapter(system.chapter);
+                    }}
+                  >
+                    <span className="vt-system-no">{system.no}</span>
+                    <span className="vt-system-content">
+                      <small>{system.kicker}</small>
+                      <strong>{system.title}</strong>
+                      <span>{system.copy}</span>
+                    </span>
+                    <span className="vt-system-arrow" aria-hidden="true">↗</span>
+                  </button>
+                ))}
+              </div>
+              <div className="vt-systems-foot">INTERACTIVE HOME SIMULATION <i /> KNX AUTOMATION</div>
+            </section>
+          </div>
         )}
 
         <aside className="vt-panel">
@@ -518,6 +590,18 @@ export default function TourClient() {
 
           <div className="vt-automation">
             <p className="vt-group-title">Automation</p>
+            <div className="vt-climate-control">
+              <span className="vt-device-icon" aria-hidden="true">°</span>
+              <span className="vt-device-copy">
+                <strong>Climate comfort</strong>
+                <small>Whole-home setpoint</small>
+              </span>
+              <span className="vt-temp-stepper">
+                <button type="button" aria-label="Decrease temperature" onClick={() => setSetPoint((v) => Math.max(18, v - 1))}>−</button>
+                <b>{setPoint}°</b>
+                <button type="button" aria-label="Increase temperature" onClick={() => setSetPoint((v) => Math.min(28, v + 1))}>+</button>
+              </span>
+            </div>
             <button
               type="button"
               className="vt-device-control"

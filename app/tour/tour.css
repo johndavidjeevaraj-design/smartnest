@@ -1427,3 +1427,153 @@ html:has(.vt-space) * {
 @media (prefers-reduced-motion: reduce) {
   .vt-intro-cue i { animation: none; }
 }
+
+/* Experience pop-up adapted as a SmartNest KNX systems gallery. */
+.vt-systems-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4,8,13,.64);
+  backdrop-filter: blur(14px) saturate(.8);
+  animation: vt-fade .28s ease both;
+}
+.vt-systems-dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(210px,.78fr) minmax(0,1.22fr);
+  gap: 28px 42px;
+  width: min(820px,calc(100vw - 40px));
+  max-height: min(82vh,720px);
+  overflow: auto;
+  padding: clamp(24px,4vw,50px);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  background: linear-gradient(145deg,rgba(17,25,35,.97),rgba(7,12,19,.96));
+  box-shadow: 0 36px 110px rgba(0,0,0,.55);
+  animation: vt-rise .45s cubic-bezier(.2,.8,.2,1) both;
+}
+.vt-systems-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--vt-line);
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  color: var(--vt-ink);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.vt-systems-close:hover { background: rgba(255,255,255,.1); transform: rotate(90deg); }
+.vt-systems-heading { align-self: center; padding-right: 6px; }
+.vt-systems-heading > span {
+  color: var(--vt-green);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .18em;
+}
+.vt-systems-heading h2 {
+  margin: 16px 0 12px;
+  color: #fff;
+  font-size: clamp(25px,3.1vw,40px);
+  line-height: 1.03;
+  letter-spacing: -.035em;
+  font-weight: 550;
+  text-wrap: balance;
+}
+.vt-systems-heading p {
+  max-width: 30ch;
+  margin: 0;
+  color: var(--vt-dim);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.vt-systems-list { display: flex; flex-direction: column; gap: 7px; }
+.vt-system-card {
+  display: grid;
+  grid-template-columns: 28px minmax(0,1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 11px;
+  background: rgba(255,255,255,.035);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .25s, background .25s, border-color .25s;
+}
+.vt-system-card:hover {
+  transform: translateX(3px);
+  border-color: rgba(41,240,196,.3);
+  background: rgba(41,240,196,.06);
+}
+.vt-system-no { align-self: start; padding-top: 2px; color: var(--vt-green); font-size: 9px; font-variant-numeric: tabular-nums; }
+.vt-system-content { display: flex; flex-direction: column; gap: 4px; }
+.vt-system-content small { color: var(--vt-cyan); font-size: 8px; font-weight: 700; letter-spacing: .14em; }
+.vt-system-content strong { color: #f4f7fb; font-size: 13px; font-weight: 600; }
+.vt-system-content > span { color: var(--vt-dim); font-size: 10px; line-height: 1.45; }
+.vt-system-arrow { color: var(--vt-green); font-size: 16px; transition: transform .2s; }
+.vt-system-card:hover .vt-system-arrow { transform: translate(2px,-2px); }
+.vt-systems-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--vt-line);
+  color: rgba(238,242,248,.5);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+.vt-systems-foot i { width: 4px; height: 4px; border-radius: 50%; background: var(--vt-green); }
+.vt-climate-control {
+  display: grid;
+  grid-template-columns: 27px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  background: rgba(255,255,255,.035);
+}
+.vt-temp-stepper { display: flex; align-items: center; gap: 5px; }
+.vt-temp-stepper button {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 6px;
+  background: rgba(255,255,255,.04);
+  color: var(--vt-green);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.vt-temp-stepper button:hover { background: rgba(41,240,196,.12); }
+.vt-temp-stepper b { min-width: 26px; color: #fff; font-size: 11px; text-align: center; font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) {
+  .vt-systems-dialog { gap: 22px; padding: 26px; }
+  .vt-top-right { gap: 6px; }
+  .vt-plan-btn { padding: 6px 9px; font-size: 9px; }
+}
+@media (max-width: 600px) {
+  .vt-systems-overlay { padding: 10px; }
+  .vt-systems-dialog { grid-template-columns: 1fr; gap: 18px; width: calc(100vw - 20px); max-height: 88vh; padding: 24px 18px 18px; }
+  .vt-systems-heading { padding-right: 30px; }
+  .vt-systems-heading h2 { max-width: 13ch; font-size: 28px; }
+  .vt-systems-foot { padding-top: 12px; font-size: 7px; }
+}
+@media (max-width: 460px) {
+  .vt-seg[aria-label="Time of day"] { display: none; }
+  .vt-top-right { gap: 4px; }
+  .vt-plan-btn { padding: 5px 7px; font-size: 8px; letter-spacing: .04em; }
+}
