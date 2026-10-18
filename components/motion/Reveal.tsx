@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import type { ElementType, ReactNode } from "react";
+import { createElement, type ComponentType, type ReactNode } from "react";
 
 /**
  * Scroll-triggered entrance.
@@ -30,6 +30,16 @@ const TAGS = {
 
 type Tag = keyof typeof TAGS;
 
+/** Stable shared props for the dynamically selected motion primitive. */
+type RevealMotionProps = {
+  children?: ReactNode;
+  className?: string;
+  initial: { opacity: number; y: number };
+  whileInView: { opacity: number; y: number };
+  viewport: { once: boolean; margin: string };
+  transition: { duration: number; delay: number; ease: number[] };
+};
+
 interface RevealProps {
   children: ReactNode;
   /** Which element to render. Defaults to div. */
@@ -55,31 +65,29 @@ export default function Reveal({
   fade = true,
 }: RevealProps) {
   const reduce = useReducedMotion();
-  const Tag = TAGS[as] as ElementType;
+  const Tag = TAGS[as] as unknown as ComponentType<RevealMotionProps>;
 
   // Reduced motion and no-JS both get a plain, fully visible element.
-  // Never leave content sitting at opacity 0 as the price of a flourish.
-  if (reduce) {
-    const Plain = as as ElementType;
-    return <Plain className={className}>{children}</Plain>;
-  }
+  // createElement avoids intersecting the incompatible prop unions that
+  // React 19 and newer Motion types produce for a runtime-selected tag.
+  if (reduce) return createElement(as, { className }, children);
 
   const step = Math.min(index, 6) * 0.055;
 
-  return (
-    <Tag
-      className={className}
-      initial={{ opacity: fade ? 0 : 1, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-70px" }}
-      transition={{
+  return createElement(
+    Tag,
+    {
+      className,
+      initial: { opacity: fade ? 0 : 1, y },
+      whileInView: { opacity: 1, y: 0 },
+      viewport: { once: true, margin: "-70px" },
+      transition: {
         duration: 0.62,
         delay: step + delay,
         ease: [0.16, 1, 0.3, 1],
-      }}
-    >
-      {children}
-    </Tag>
+      },
+    },
+    children,
   );
 }
 
