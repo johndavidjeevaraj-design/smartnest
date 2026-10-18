@@ -7,7 +7,8 @@ import { VIEWS, type RoomKey, type TimeKey } from "./villa";
 
 export default function VillaCanvas({
   lights,
-  gate,
+  brightness,
+  doorOpen,
   curtains,
   time,
   cut,
@@ -15,7 +16,8 @@ export default function VillaCanvas({
   onPick,
 }: {
   lights: Record<RoomKey, boolean>;
-  gate: boolean;
+  brightness: number;
+  doorOpen: boolean;
   curtains: boolean;
   time: TimeKey;
   cut: boolean;
@@ -25,7 +27,7 @@ export default function VillaCanvas({
   return (
     <Canvas
       shadows
-      dpr={[1, 1.5]}
+      dpr={[1, 1.25]}
       camera={{ fov: 58, position: [27, 10, 37], near: 0.05, far: 600 }}
       gl={{ antialias: false, powerPreference: "high-performance" }}
       style={{ touchAction: "pan-y" }}
@@ -33,7 +35,8 @@ export default function VillaCanvas({
       <Suspense fallback={null}>
         <VillaScene
           lights={lights}
-          gate={gate}
+          brightness={brightness}
+          doorOpen={doorOpen}
           curtains={curtains}
           time={time}
           cut={cut}

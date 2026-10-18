@@ -125,6 +125,9 @@ function ScrollRig({ scroll, views }: { scroll: { current: Journey }; views: Vie
   useEffect(() => {
     const el = gl.domElement;
     const onDown = (e: PointerEvent) => {
+      // Keep vertical touch gestures native so mobile users can scroll the
+      // chapter journey; desktop pointer drags remain free-look controls.
+      if (e.pointerType === "touch") return;
       look.current.drag = true;
       look.current.x = e.clientX;
       look.current.y = e.clientY;
@@ -195,9 +198,11 @@ function ScrollRig({ scroll, views }: { scroll: { current: Journey }; views: Vie
     }
 
     const time = state.clock.elapsedTime;
+    // A barely-there exterior drift adds life without making the camera feel
+    // seasick; the interior tour itself stays composed and architectural.
     const r =
-      Math.sin(time * 0.11) * 0.4 * (1 - THREE.MathUtils.smoothstep(i, 0, 1.1)) +
-      Math.sin(time * 0.09) * 0.15 * THREE.MathUtils.smoothstep(i, views.length - 1.6, views.length - 1);
+      Math.sin(time * 0.11) * 0.045 * (1 - THREE.MathUtils.smoothstep(i, 0, 1.1)) +
+      Math.sin(time * 0.09) * 0.015 * THREE.MathUtils.smoothstep(i, views.length - 1.6, views.length - 1);
     if (r) tmp.p.sub(tmp.t).applyAxisAngle(THREE.Object3D.DEFAULT_UP, r).add(tmp.t);
 
     camera.position.copy(tmp.p);
@@ -251,7 +256,8 @@ function SectionPlane({ scroll }: { scroll: { current: Journey } }) {
 function Interior({
   build,
   lights,
-  gate,
+  brightness,
+  doorOpen,
   curtains,
   cut,
   scroll,
@@ -259,7 +265,8 @@ function Interior({
 }: {
   build: VillaBuild;
   lights: Record<RoomKey, boolean>;
-  gate: boolean;
+  brightness: number;
+  doorOpen: boolean;
   curtains: boolean;
   cut: boolean;
   scroll: { current: Journey };
@@ -275,10 +282,10 @@ function Interior({
     for (const r of ROOMS) {
       const on = lights[r.key];
       for (const m of build.rooms[r.key].fixtures) {
-        m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, on ? 2.4 : 0.02, k);
+        m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, on ? 2.4 * (brightness / 100) : 0.02, k);
       }
       for (const l of build.rooms[r.key].lights) {
-        l.intensity = THREE.MathUtils.lerp(l.intensity, on ? 12 : 0, k);
+        l.intensity = THREE.MathUtils.lerp(l.intensity, on ? 12 * (brightness / 100) : 0, k);
       }
       for (const m of build.rooms[r.key].leds) {
         m.emissiveIntensity = THREE.MathUtils.lerp(m.emissiveIntensity, on ? 3 : 0.12, k);
@@ -300,7 +307,7 @@ function Interior({
         (1 - THREE.MathUtils.smoothstep(scroll.current.i, 3.2, 3.9));
       build.doorPivot.rotation.y = THREE.MathUtils.lerp(
         build.doorPivot.rotation.y,
-        -Math.max(auto, gate ? 1 : 0) * 1.35,
+        -Math.max(auto, doorOpen ? 1 : 0) * 1.35,
         k,
       );
     }
@@ -342,7 +349,8 @@ function Interior({
 
 export default function VillaScene({
   lights,
-  gate,
+  brightness,
+  doorOpen,
   curtains,
   cut,
   time,
@@ -351,7 +359,8 @@ export default function VillaScene({
   onPick,
 }: {
   lights: Record<RoomKey, boolean>;
-  gate: boolean;
+  brightness: number;
+  doorOpen: boolean;
   curtains: boolean;
   time: TimeKey;
   cut: boolean;
@@ -392,7 +401,7 @@ export default function VillaScene({
         intensity={t.sunPower}
         color={t.sunColor}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-16}
         shadow-camera-right={16}
         shadow-camera-top={16}
@@ -403,7 +412,7 @@ export default function VillaScene({
         shadow-normalBias={0.03}
       />
 
-      <Interior build={build} lights={lights} gate={gate} curtains={curtains} cut={cut} scroll={scroll} onPick={onPick} />
+      <Interior build={build} lights={lights} brightness={brightness} doorOpen={doorOpen} curtains={curtains} cut={cut} scroll={scroll} onPick={onPick} />
       <ScrollRig scroll={scroll} views={views} />
       <SectionPlane scroll={scroll} />
     </>

@@ -13,10 +13,10 @@ const VillaCanvas = dynamic(() => import("./VillaCanvas"), { ssr: false });
 type SceneKey = "welcome" | "relax" | "movie" | "away";
 
 const SCENES: { key: SceneKey; label: string; note: string }[] = [
-  { key: "welcome", label: "Welcome", note: "Lights up, blinds open" },
-  { key: "relax", label: "Relax", note: "Warm and dimmed" },
-  { key: "movie", label: "Movie night", note: "Lights down" },
-  { key: "away", label: "Away", note: "Dark, secured" },
+  { key: "welcome", label: "Welcome", note: "Lighting on, blinds open" },
+  { key: "relax", label: "Relax", note: "Warm evening lighting" },
+  { key: "movie", label: "Movie night", note: "Living room on, blinds closed" },
+  { key: "away", label: "Away", note: "Lights off, blinds closed" },
 ];
 
 const ALL_OFF: Record<RoomKey, boolean> = {
@@ -31,14 +31,16 @@ const ALL_OFF: Record<RoomKey, boolean> = {
   landing: false,
 };
 
-const SCENE_STATE: Record<SceneKey, { lights: Partial<Record<RoomKey, boolean>>; time: TimeKey }> = {
+const SCENE_STATE: Record<SceneKey, { lights: Partial<Record<RoomKey, boolean>>; time: TimeKey; curtains: boolean; brightness: number }> = {
   welcome: {
     lights: { living: true, dining: true, kitchen: true, foyer: true, master: true, bed2: true, bed3: true, landing: true },
     time: "day",
+    curtains: false,
+    brightness: 88,
   },
-  relax: { lights: { living: true, dining: true, master: true, bed3: true }, time: "dusk" },
-  movie: { lights: { living: true }, time: "night" },
-  away: { lights: {}, time: "night" },
+  relax: { lights: { living: true, dining: true, master: true, bed3: true }, time: "dusk", curtains: true, brightness: 42 },
+  movie: { lights: { living: true }, time: "night", curtains: true, brightness: 16 },
+  away: { lights: {}, time: "night", curtains: true, brightness: 28 },
 };
 
 function Loader() {
@@ -74,7 +76,8 @@ export default function TourClient() {
     bed3: false,
     landing: false,
   });
-  const [gate, setGate] = useState(false);
+  const [brightness, setBrightness] = useState(72);
+  const [doorOpen, setDoorOpen] = useState(false);
   const [curtains, setCurtains] = useState(true);
   const [time, setTime] = useState<TimeKey>("dusk");
   const [wallOverride, setWallOverride] = useState<boolean | null>(null);
@@ -156,7 +159,7 @@ export default function TourClient() {
       // crawling — frame-rate-dependent easing is how a camera gets stuck.
       const dt = Math.min((now - prev) / 1000, 0.25);
       prev = now;
-      const a = reduced ? 1 : 1 - Math.pow(1 - 0.085, dt * 60);
+      const a = reduced ? 1 : 1 - Math.pow(1 - 0.055, dt * 60);
       journey.current.i += (target.current - journey.current.i) * a;
       if (Math.abs(target.current - journey.current.i) < 0.0008) {
         journey.current.i = target.current;
@@ -258,7 +261,7 @@ export default function TourClient() {
         goChapter(Math.max(Math.round(journey.current.i) - 1, 0));
       }
       if (e.key.toLowerCase() === "x") setWallOverride((v) => !(v ?? false));
-      if (e.key.toLowerCase() === "g") setGate((g) => !g);
+      if (e.key.toLowerCase() === "g") setDoorOpen((g) => !g);
       if (e.key === "Escape") setPlanOpen(false);
     };
     window.addEventListener("keydown", onKey);
@@ -280,7 +283,10 @@ export default function TourClient() {
     const next = { ...ALL_OFF };
     for (const room of Object.keys(s.lights) as RoomKey[]) next[room] = true;
     setLights(next);
+    setBrightness(s.brightness);
     setTime(s.time);
+    setCurtains(s.curtains);
+    setDoorOpen(false);
     setScene(k);
   };
 
@@ -301,7 +307,8 @@ export default function TourClient() {
         <div className="vt-canvas">
           <VillaCanvas
             lights={lights}
-            gate={gate}
+            brightness={brightness}
+            doorOpen={doorOpen}
             curtains={curtains}
             time={time}
             cut={cut}
@@ -318,8 +325,8 @@ export default function TourClient() {
               <span className="vt-intro-kicker">SmartNest · KNX Walkthrough</span>
               <h1 className="vt-intro-title">Experience Intelligent Living.</h1>
               <p className="vt-intro-sub">
-                Scroll to walk through the villa — from the street, into the garage, across
-                the ground floor and up to the master suite.
+                Scroll to move through the villa — from the arrival court, through the
+                living spaces, and upstairs to the private suite.
               </p>
               <div className="vt-intro-actions">
                 <button type="button" className="vt-intro-primary" onClick={() => setIntro(false)}>
@@ -413,11 +420,18 @@ export default function TourClient() {
 
         <aside className="vt-panel">
           <div className="vt-panel-h">
-            <span>Devices</span>
+            <div className="vt-panel-title">
+              <span className="vt-panel-kicker">SMARTNEST · KNX</span>
+              <strong>Home controls</strong>
+            </div>
             <span className="vt-panel-live">
-              <i className={onCount ? "is-on" : ""} />
-              {onCount}/{ROOMS.length} on
+              <i className="is-on" />
+              SIMULATION
             </span>
+          </div>
+          <div className="vt-panel-metric">
+            <span>Lighting zones</span>
+            <b>{onCount} <i>/ {ROOMS.length} active</i></b>
           </div>
 
           <div className="vt-scenes" role="group" aria-label="Scenes">
@@ -433,6 +447,25 @@ export default function TourClient() {
                 {s.label}
               </button>
             ))}
+          </div>
+
+          <div className="vt-dimmer">
+            <div className="vt-dimmer-label">
+              <span>Light level</span>
+              <b>{brightness}%</b>
+            </div>
+            <input
+              type="range"
+              min="10"
+              max="100"
+              value={brightness}
+              aria-label="Lighting brightness"
+              style={{ background: `linear-gradient(90deg, var(--vt-green) ${brightness}%, rgba(255,255,255,.12) ${brightness}%)` }}
+              onChange={(e) => {
+                setBrightness(Number(e.currentTarget.value));
+                setScene(null);
+              }}
+            />
           </div>
 
           <ul className="vt-rooms">
@@ -452,13 +485,42 @@ export default function TourClient() {
             ))}
           </ul>
 
-          <div className="vt-switches">
-            <button type="button" className={gate ? "is-on" : ""} onClick={() => setGate((g) => !g)}>
-              <span>Garage door</span>
-              <b>{gate ? "Open" : "Auto"}</b>
+          <div className="vt-automation">
+            <p className="vt-group-title">Automation</p>
+            <button
+              type="button"
+              className="vt-device-control"
+              aria-pressed={!curtains}
+              onClick={() => {
+                setCurtains((closed) => !closed);
+                setScene(null);
+              }}
+            >
+              <span className="vt-device-icon" aria-hidden="true">⌁</span>
+              <span className="vt-device-copy">
+                <strong>Motorised blinds</strong>
+                <small>{curtains ? "Closed · whole home" : "Open · whole home"}</small>
+              </span>
+              <span className={`vt-toggle ${curtains ? "" : "is-on"}`} aria-hidden="true"><i /></span>
             </button>
+            <button
+              type="button"
+              className={`vt-device-control ${doorOpen ? "is-on" : ""}`}
+              aria-pressed={doorOpen}
+              onClick={() => setDoorOpen((open) => !open)}
+            >
+              <span className="vt-device-icon" aria-hidden="true">↗</span>
+              <span className="vt-device-copy">
+                <strong>Front door</strong>
+                <small>{doorOpen ? "Open override" : "Presence · automatic"}</small>
+              </span>
+              <span className="vt-device-state">{doorOpen ? "OPEN" : "AUTO"}</span>
+            </button>
+          </div>
+
+          <div className="vt-switches">
             <button type="button" className={cut ? "is-on" : ""} onClick={() => setWallOverride(!cut)}>
-              <span>X-Ray</span>
+              <span>Wall cutaway</span>
               <b>{cut ? "On" : "Off"}</b>
             </button>
             <button type="button" onClick={() => smoothTo(0)}>
