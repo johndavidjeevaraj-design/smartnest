@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SmartNest — Smart Home Automation Website
 
-## Getting Started
+A Next.js website experience for SmartNest, presenting smart-home automation services for homes and villas in the Hosur and Bengaluru markets. The site combines service storytelling, product/technology education, motion-led sections and an enquiry journey.
 
-First, run the development server:
+## Experience highlights
+
+- Service presentation for KNX wired automation and connected home systems.
+- Dedicated sections for spaces, process, reviews and contact.
+- Motion components for reveal, parallax, marquees, counters and scroll progress.
+- Three.js / React Three Fiber dependencies for 3D web experiences.
+- Contact form component and clear enquiry calls to action.
+- Search-friendly metadata, canonical URL and Open Graph metadata.
+
+## Technology
+
+- Next.js 16 App Router
+- React 19 and TypeScript
+- Tailwind CSS 4
+- Three.js and React Three Fiber / Drei
+- GSAP, Motion and Lenis
+- Lucide icons
+
+## Local development
+
+Requirements: Node.js version supported by the installed Next.js release.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+npm start
+```
 
-## Learn More
+## Configuration and deployment
 
-To learn more about Next.js, take a look at the following resources:
+Review environment variables, contact-form delivery configuration, image assets, canonical URLs and deployment settings before publishing. Do not commit private API keys, SMTP credentials or customer enquiry data.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Engineering notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The homepage contains client-facing interactive sections and animation components. Keep server-rendered content where possible, isolate browser-only/3D code behind client components, and verify reduced-motion behaviour, keyboard navigation, mobile performance and form validation.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [Engineering roadmap](docs/ENGINEERING_ROADMAP.md) for the next implementation priorities.
